@@ -1,0 +1,14 @@
+/*
+Custom Css
+*/
+/* Ảnh trong card sản phẩm liên quan */
+.product-wap .card-img {
+    height: 300px;
+    object-fit: cover;
+}
+
+/* Ảnh chính sản phẩm */
+#product-detail {
+    max-height: 450px;
+    object-fit: cover;
+}
