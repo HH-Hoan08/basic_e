@@ -1,4 +1,4 @@
-<style>
+    <style>
         /* Ảnh chính sản phẩm */
         #product-detail {
             max-height: 450px;
