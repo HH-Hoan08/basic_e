@@ -1,6 +1,6 @@
 <?php
 $page = isset($_GET['page']) ? $_GET['page'] : 'home';
-
+define('BASE_URL', 'http://localhost/Web_NC/basic_e/');
 include '../view/inc/header.php';
 
 switch ($page) {

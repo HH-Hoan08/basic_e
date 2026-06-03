@@ -1,3 +1,7 @@
+<link rel="stylesheet" href="assets/css/leaflet.css">
+<link rel="stylesheet" href="assets/css/leaflet-gesture-handling.min.css">
+<script src="assets/js/leaflet-gesture-handling.min.js"></script>
+
     <!-- Bắt đầu Modal -->
     <div class="modal fade bg-white" id="templatemo_search" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">

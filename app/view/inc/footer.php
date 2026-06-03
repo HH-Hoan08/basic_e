@@ -1,4 +1,4 @@
- <!-- Bắt đầu Chân trang -->
+     <!-- Bắt đầu Chân trang -->
     <footer class="bg-dark" id="tempaltemo_footer">
         <div class="container">
             <div class="row">
@@ -94,12 +94,11 @@
     <!-- Kết thúc Chân trang -->
 
     <!-- Bắt đầu Scripts -->
-    <script src="assets/js/jquery-1.11.0.min.js"></script>
-    <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
-    <script src="assets/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/templatemo.js"></script>
-    <script src="assets/js/custom.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/jquery-1.11.0.min.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/jquery-migrate-1.2.1.min.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/bootstrap.bundle.min.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/templatemo.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/custom.js"></script>
     <!-- Kết thúc Scripts -->
 </body>
-
 </html>
