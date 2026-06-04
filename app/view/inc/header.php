@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Basic Shop</title>
+    <title><?php echo isset($pageTitle) ? $pageTitle : 'Basic Shop'; ?></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -16,6 +16,10 @@
     <link rel="stylesheet" href="assets/css/slick.min.css">
     <link rel="stylesheet" href="assets/css/slick-theme.css">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
+
+    <?php if (isset($page) && $page === 'about'): ?>
+        <link rel="stylesheet" href="app/view/page_css/about.css">
+    <?php endif; ?>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;200;300;400;500;700;900&display=swap">
 </head>

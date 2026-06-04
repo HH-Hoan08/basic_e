@@ -446,9 +446,9 @@
         <div class="container my-4">
             <div class="row text-center py-3">
                 <div class="col-lg-6 m-auto">
-                    <h1 class="h1">Thương hiệu của chúng tôi</h1>
+                    <h1 class="h1">Thương hiệu đối tác</h1>
                     <p>
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet.
+                        Basic Shop hợp tác với các thương hiệu thời trang uy tín trong và ngoài nước.
                     </p>
                 </div>
                 <div class="col-lg-9 m-auto tempaltemo-carousel">

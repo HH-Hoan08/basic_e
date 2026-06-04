@@ -37,11 +37,11 @@
                 <div class="col-md-4 pt-5">
                     <h2 class="h2 text-light border-bottom pb-3 border-light">Thông tin thêm</h2>
                     <ul class="list-unstyled text-light footer-link-list">
-                        <li><a class="text-decoration-none" href="#">Trang chủ</a></li>
-                        <li><a class="text-decoration-none" href="#">Về chúng tôi</a></li>
-                        <li><a class="text-decoration-none" href="#">Địa chỉ cửa hàng</a></li>
-                        <li><a class="text-decoration-none" href="#">Câu hỏi thường gặp</a></li>
-                        <li><a class="text-decoration-none" href="#">Liên hệ</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=home">Trang chủ</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=about">Về chúng tôi</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=contact">Địa chỉ cửa hàng</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=faq">Câu hỏi thường gặp</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=contact">Liên hệ</a></li>
                     </ul>
                 </div>
 
