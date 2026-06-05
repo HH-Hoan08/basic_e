@@ -90,7 +90,7 @@
 
                     <div class="dropdown">
                         <a class="nav-icon position-relative text-decoration-none dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa fa-fw fa-user text-dark mr-3"></i>
+                            < i class="fa fa-fw fa-user text-dark mr-3"></i>
                             <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark">+99</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">

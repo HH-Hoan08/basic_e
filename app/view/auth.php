@@ -57,6 +57,13 @@ $action = isset($_GET['page']) && $_GET['page'] == 'register' ? 'register' : 'lo
                         <p class="form-subtitle">Đăng nhập để tiếp tục mua sắm</p>
                     </div>
 
+                    <?php if (!empty($error) && $action == 'login'): ?>
+                        <div class="alert alert-danger py-2 px-3 text-center" style="font-size: 14px;"><?= $error ?></div>
+                    <?php endif; ?>
+                    <?php if (!empty($success) && $action == 'login'): ?>
+                        <div class="alert alert-success py-2 px-3 text-center" style="font-size: 14px;"><?= $success ?></div>
+                    <?php endif; ?>
+
                     <form action="app/controller/index.php?page=login" method="post">
                         <div class="field-group">
                             <label>Tên đăng nhập hoặc Email</label>
@@ -100,6 +107,10 @@ $action = isset($_GET['page']) && $_GET['page'] == 'register' ? 'register' : 'lo
                         <h2 class="form-title">Tạo tài khoản mới</h2>
                         <p class="form-subtitle">Tham gia hàng ngàn khách hàng hài lòng</p>
                     </div>
+
+                    <?php if (!empty($error) && $action == 'register'): ?>
+                        <div class="alert alert-danger py-2 px-3 text-center" style="font-size: 14px;"><?= $error ?></div>
+                    <?php endif; ?>
 
                     <form action="app/controller/index.php?page=register" method="post">
                         <div class="field-group">
