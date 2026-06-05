@@ -18,7 +18,10 @@
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
 
     <?php if (isset($page) && $page === 'about'): ?>
-        <link rel="stylesheet" href="app/view/page_css/about.css">
+        <link rel="stylesheet" href="assets/css/about.css">
+    <?php endif; ?>
+    <?php if (isset($page) && $page === 'contact'): ?>
+        <link rel="stylesheet" href="assets/css/contact.css">
     <?php endif; ?>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;200;300;400;500;700;900&display=swap">
