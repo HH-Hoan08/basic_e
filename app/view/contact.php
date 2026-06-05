@@ -1,66 +1,130 @@
-    <!-- Bắt đầu Nội dung trang -->
-    <div class="container-fluid bg-light py-5">
-        <div class="col-md-6 m-auto text-center">
-            <h1 class="h1">Liên hệ chúng tôi</h1>
-            <p>
-                Proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                Lorem ipsum dolor sit amet.
-            </p>
-        </div>
+<?php $pageTitle = 'Liên Hệ — Basic Shop'; ?>
+<?php require_once __DIR__ . '/inc/header.php'; ?>
+
+<!-- banner -->
+<div class="container-fluid bg-light py-5">
+    <div class="col-md-6 m-auto text-center">
+        <h1 class="h1">Liên hệ chúng tôi</h1>
+        <p>
+            Bạn có câu hỏi hay cần hỗ trợ? Đội ngũ Basic Shop luôn sẵn sàng
+            lắng nghe và phản hồi trong thời gian sớm nhất.
+        </p>
     </div>
+</div>
 
-    <!-- Bắt đầu Bản đồ -->
-    <div id="mapid" style="width: 100%; height: 300px;"></div>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
-    <script>
-        var mymap = L.map('mapid').setView([-23.013104, -43.394365, 13], 13);
+<!-- map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+      integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+      crossorigin=""/>
 
-        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-            maxZoom: 18,
-            attribution: 'Mẫu Basic | Thiết kế mẫu bởi <a href="https://templatemo.com/">Templatemo</a> | Dữ liệu bản đồ &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-                '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-                'Hình ảnh © <a href="https://www.mapbox.com/">Mapbox</a>',
-            id: 'mapbox/streets-v11',
-            tileSize: 512,
-            zoomOffset: -1
-        }).addTo(mymap);
+<div id="mapid" style="width:100%; height:300px;"></div>
 
-        L.marker([-23.013104, -43.394365, 13]).addTo(mymap)
-            .bindPopup("<b>Basic</b> Mẫu eCommerce<br />Địa điểm.").openPopup();
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+<script>
+    // khởi tạo bản đồ và đặt view về vị trí của shop
+    var mymap = L.map('mapid').setView([10.8234, 106.6831], 16);
 
-        mymap.scrollWheelZoom.disable();
-        mymap.touchZoom.disable();
-    </script>
-    <!-- Kết thúc Bản đồ -->
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+    }).addTo(mymap);
 
-    <!-- Bắt đầu Form Liên hệ -->
-    <div class="container py-5">
-        <div class="row py-5">
-            <form class="col-md-9 m-auto" method="post" role="form">
-                <div class="row">
-                    <div class="form-group col-md-6 mb-3">
-                        <label for="inputname">Tên</label>
-                        <input type="text" class="form-control mt-1" id="name" name="name" placeholder="Tên">
-                    </div>
-                    <div class="form-group col-md-6 mb-3">
-                        <label for="inputemail">Email</label>
-                        <input type="email" class="form-control mt-1" id="email" name="email" placeholder="Email">
-                    </div>
+    L.marker([10.8234, 106.6831]).addTo(mymap)
+        .bindPopup("<b>Basic Shop</b><br>91 Nguyễn Văn Nghi, Gò Vấp, TP.HCM").openPopup();
+
+    mymap.scrollWheelZoom.disable();
+    mymap.touchZoom.disable();
+</script>
+
+<!-- form liên hệ -->
+<div class="container py-5">
+    <div class="row py-5">
+
+        <?php if (!empty($_SESSION['contact_success'])): ?>
+            <div class="col-md-9 m-auto mb-3">
+                <div class="alert alert-success d-flex align-items-center gap-2">
+                    <i class="fa fa-check-circle"></i>
+                    <?= htmlspecialchars($_SESSION['contact_success']) ?>
                 </div>
-                <div class="mb-3">
-                    <label for="inputsubject">Chủ đề</label>
-                    <input type="text" class="form-control mt-1" id="subject" name="subject" placeholder="Chủ đề">
+            </div>
+            <?php unset($_SESSION['contact_success']); ?>
+        <?php endif; ?>
+
+        <?php if (!empty($_SESSION['contact_error'])): ?>
+            <div class="col-md-9 m-auto mb-3">
+                <div class="alert alert-danger d-flex align-items-center gap-2">
+                    <i class="fa fa-exclamation-circle"></i>
+                    <?= htmlspecialchars($_SESSION['contact_error']) ?>
                 </div>
-                <div class="mb-3">
-                    <label for="inputmessage">Tin nhắn</label>
-                    <textarea class="form-control mt-1" id="message" name="message" placeholder="Tin nhắn" rows="8"></textarea>
+            </div>
+            <?php unset($_SESSION['contact_error']); ?>
+        <?php endif; ?>
+
+        <form class="col-md-9 m-auto" method="POST"
+              action="<?= BASE_URL ?>index.php?page=do_contact"
+              novalidate>
+
+            <div class="row">
+                <div class="form-group col-md-6 mb-3">
+                    <label for="name">Họ và tên <span class="text-danger">*</span></label>
+                    <input
+                        type="text"
+                        class="form-control mt-1"
+                        id="name"
+                        name="name"
+                        placeholder="Nguyễn Văn A"
+                        value="<?= htmlspecialchars($_POST['name'] ?? '') ?>"
+                        required>
                 </div>
-                <div class="row">
-                    <div class="col text-end mt-2">
-                        <button type="submit" class="btn btn-success btn-lg px-3">Gửi đi</button>
-                    </div>
+                <div class="form-group col-md-6 mb-3">
+                    <label for="email">Email <span class="text-danger">*</span></label>
+                    <input
+                        type="email"
+                        class="form-control mt-1"
+                        id="email"
+                        name="email"
+                        placeholder="example@email.com"
+                        value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                        required>
                 </div>
-            </form>
-        </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="subject">Chủ đề <span class="text-danger">*</span></label>
+                <select class="form-select mt-1" id="subject" name="subject" required>
+                    <option value="" disabled <?= empty($_POST['subject']) ? 'selected' : '' ?>>
+                        -- Chọn chủ đề --
+                    </option>
+                    <option value="order"   <?= ($_POST['subject'] ?? '') === 'order'   ? 'selected' : '' ?>>Đơn hàng</option>
+                    <option value="product" <?= ($_POST['subject'] ?? '') === 'product' ? 'selected' : '' ?>>Sản phẩm</option>
+                    <option value="return"  <?= ($_POST['subject'] ?? '') === 'return'  ? 'selected' : '' ?>>Đổi / Trả hàng</option>
+                    <option value="voucher" <?= ($_POST['subject'] ?? '') === 'voucher' ? 'selected' : '' ?>>Voucher & Khuyến mãi</option>
+                    <option value="account" <?= ($_POST['subject'] ?? '') === 'account' ? 'selected' : '' ?>>Tài khoản</option>
+                    <option value="other"   <?= ($_POST['subject'] ?? '') === 'other'   ? 'selected' : '' ?>>Khác</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="message">Tin nhắn <span class="text-danger">*</span></label>
+                <textarea
+                    class="form-control mt-1"
+                    id="message"
+                    name="message"
+                    placeholder="Nhập nội dung bạn muốn gửi..."
+                    rows="8"
+                    required><?= htmlspecialchars($_POST['message'] ?? '') ?></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col text-end mt-2">
+                    <button type="submit" class="btn btn-success btn-lg px-3">
+                        <i class="fa fa-paper-plane me-2"></i>Gửi đi
+                    </button>
+                </div>
+            </div>
+
+        </form>
     </div>
-    <!-- Kết thúc Form Liên hệ -->
+</div>

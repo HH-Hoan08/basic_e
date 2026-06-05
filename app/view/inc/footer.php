@@ -8,15 +8,15 @@
                     <ul class="list-unstyled text-light footer-link-list">
                         <li>
                             <i class="fas fa-map-marker-alt fa-fw"></i>
-                            123 Consectetur tại ligula 10660
+                            91 Nguyễn Văn Nghi, Gò Vấp, TP.HCM
                         </li>
                         <li>
                             <i class="fa fa-phone fa-fw"></i>
-                            <a class="text-decoration-none" href="tel:010-020-0340">010-020-0340</a>
+                            <a class="text-decoration-none" href="tel:010-020-0340">0705972231</a>
                         </li>
                         <li>
                             <i class="fa fa-envelope fa-fw"></i>
-                            <a class="text-decoration-none" href="mailto:info@company.com">info@congty.com</a>
+                            <a class="text-decoration-none" href="mailto:info@company.com">phamhuuphu31102005@gmail.com</a>
                         </li>
                     </ul>
                 </div>
@@ -47,7 +47,7 @@
 
             </div>
 
-            <div class="row text-light mb-4">
+            <div class="row text-light pb-4">
                 <div class="col-12 mb-3">
                     <div class="w-100 my-3 border-top border-light"></div>
                 </div>
@@ -76,20 +76,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="w-100 bg-black py-3">
-            <div class="container">
-                <div class="row pt-2">
-                    <div class="col-12">
-                        <p class="text-left text-light">
-                            Bản quyền &copy; 2021 Tên công ty
-                            | Thiết kế bởi <a rel="sponsored" href="https://templatemo.com" target="_blank">TemplateMo</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </footer>
     <!-- Kết thúc Chân trang -->
 
