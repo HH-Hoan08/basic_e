@@ -3,3 +3,6 @@
 
 # remove .htaccess file
 *.htaccess
+
+#  rm file
+/app/models/database.php
