@@ -54,11 +54,11 @@
                     Tất cả thương hiệu
                 </a>
                 <?php foreach ($brands as $b):
-                    $active = ($filter['brand_id'] == $b['id']) ? 'text-success fw-bold' : 'text-muted';
+                    $active = ($filter['brand_id'] == $b->getId()) ? 'text-success fw-bold' : 'text-muted';
                 ?>
-                    <a href="<?= BASE_URL ?>index.php?page=shop&gender=<?= $filter['gender'] ?>&brand_id=<?= $b['id'] ?>"
+                    <a href="<?= BASE_URL ?>index.php?page=shop&gender=<?= $filter['gender'] ?>&brand_id=<?= $b->getId() ?>"
                        class="text-decoration-none <?= $active ?>">
-                        <?= htmlspecialchars($b['name']) ?>
+                        <?= htmlspecialchars($b->getName()) ?>
                     </a>
                 <?php endforeach; ?>
             </div>
@@ -129,10 +129,9 @@
             <?php else: ?>
                 <div class="row g-4">
                 <?php foreach ($products as $p):
-                    $displayPrice = $p['sale_price'] ?? $p['price'];
-                    $hasDiscount  = !is_null($p['sale_price']);
-                    $discount     = $hasDiscount
-                        ? round((1 - $p['sale_price'] / $p['price']) * 100) : 0;
+                    $displayPrice = $p->getDisplayPrice();
+                    $hasDiscount  = $p->hasDiscount();
+                    $discount     = $p->getDiscountPercent();
                 ?>
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 border-0 shadow-sm product-card">
@@ -143,40 +142,40 @@
                                 </span>
                             <?php endif; ?>
 
-                            <?php if ($p['is_featured']): ?>
+                            <?php if ($p->getIsFeatured()): ?>
                                 <span class="badge bg-success position-absolute top-0 end-0 m-2">
                                     Nổi bật
                                 </span>
                             <?php endif; ?>
-
-                            <!-- Tạm ẩn hình ảnh sản phẩm để tránh lỗi load ảnh
-                            <a href="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= $p['slug'] ?>">
-                                <img src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($p['image'] ?? 'no-image.jpg') ?>"
-                                     class="card-img-top product-img"
-                                     alt="<?= htmlspecialchars($p['name']) ?>"
-                                     onerror="this.src='<?= BASE_URL ?>assets/img/no-image.jpg'">
+                            
+                            <!-- link ảnh sản phẩm, nếu ảnh lỗi sẽ hiển thị ảnh mặc định no-image.jpg
+                            <a href="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= $p->getSlug() ?>">
+                                <img src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($p->getImage() ?? 'no-image.jpg') ?>"
+                                    class="card-img-top product-img"
+                                    alt="<?= htmlspecialchars($p->getName()) ?>"
+                                    onerror="this.src='<?= BASE_URL ?>assets/img/no-image.jpg'">
                             </a> -->
                            
 
                             <div class="card-body">
                                 <p class="text-muted small mb-1">
-                                    <?= htmlspecialchars($p['brand_name'] ?? '') ?>
+                                    <?= htmlspecialchars($p->getBrandName() ?? '') ?>
                                 </p>
                                 <h6 class="card-title mb-1">
-                                    <a href="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= $p['slug'] ?>"
+                                    <a href="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= $p->getSlug() ?>"
                                        class="text-dark text-decoration-none">
-                                        <?= htmlspecialchars($p['name']) ?>
+                                        <?= htmlspecialchars($p->getName()) ?>
                                     </a>
                                 </h6>
 
                                 <!-- Sao đánh giá -->
                                 <div class="mb-2">
-                                    <?php $rating = round($p['avg_rating']);
+                                    <?php $rating = round($p->getAvgRating());
                                     for ($i = 1; $i <= 5; $i++): ?>
                                         <i class="fa fa-star <?= $i<=$rating?'text-warning':'text-muted' ?>"
                                            style="font-size:12px;"></i>
                                     <?php endfor; ?>
-                                    <small class="text-muted">(<?= $p['avg_rating'] ?>)</small>
+                                    <small class="text-muted">(<?= $p->getAvgRating() ?>)</small>
                                 </div>
 
                                 <!-- Giá -->
@@ -186,14 +185,14 @@
                                     </span>
                                     <?php if ($hasDiscount): ?>
                                         <span class="text-muted text-decoration-line-through small">
-                                            <?= number_format($p['price'],0,',','.') ?>đ
+                                            <?= number_format($p->getPrice(),0,',','.') ?>đ
                                         </span>
                                     <?php endif; ?>
                                 </div>
                             </div>
 
                             <div class="card-footer bg-transparent border-0 pt-0 pb-3">
-                                <a href="<?= BASE_URL ?>index.php?page=cart&action=add&id=<?= $p['id'] ?>"
+                                <a href="<?= BASE_URL ?>index.php?page=cart&action=add&id=<?= $p->getId() ?>"
                                    class="btn btn-outline-success btn-sm w-100">
                                     <i class="fa fa-cart-plus me-1"></i>Thêm vào giỏ
                                 </a>

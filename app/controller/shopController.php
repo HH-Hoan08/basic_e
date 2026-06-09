@@ -28,4 +28,30 @@ class ShopController {
 
         include __DIR__ . '/../view/shop.php';
     }
+
+    public function showSingle(): void {
+        $slug = $_GET['slug'] ?? '';
+
+        // nếu không có slug chuyển về trang shop
+        if (empty($slug)) {
+            header('Location: ' . BASE_URL . 'index.php?page=shop');
+            exit();
+        }
+        // lấy sản phẩm theo slug từ database
+        $product = $this->productModel->getBySlug($slug);
+        // nếu không tìm thấy sản phẩm thì chuyển về trang shop
+        if (!$product) {
+            header('Location: ' . BASE_URL . 'index.php?page=shop');
+            exit();
+        }
+
+        $variants = $this->productModel->getVariants($product->getId());
+        $images   = $this->productModel->getImages($product->getId());
+        $related  = $this->productModel->getRelated($product->getCategoryId(), $slug, 4);
+        $reviews  = $this->productModel->getReviews($product->getId());
+
+        // truyền productModel sang view để lấy variant của SP liên quan
+        $productModel = $this->productModel;
+        include __DIR__ . '/../view/shop-single.php';
+    }
 }
