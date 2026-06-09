@@ -1,7 +1,7 @@
 <?php
 session_start();
 $page = isset($_GET['page']) ? $_GET['page'] : 'home';
-define('BASE_URL', 'http://localhost/basic_e/');
+define('BASE_URL', 'http://localhost/Web_NC/basic_e/');
 
 include '../models/xl_data.php';
 $db = new xl_data();
@@ -71,7 +71,9 @@ include '../view/inc/header.php';
 
 switch ($page) {
     case 'shop':
-        include '../view/shop.php';
+        include '../controller/shopController.php';
+        $shopController = new ShopController();
+        $shopController->showShop();
         break;
     case 'contact':
         include '../view/contact.php';

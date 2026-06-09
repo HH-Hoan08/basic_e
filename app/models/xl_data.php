@@ -1,5 +1,5 @@
 <?php 
-include "../models/database.php";
+include_once __DIR__ . "/database.php";
 class xl_data{
     //lấy dữ liệu database
     public function __construct(){
@@ -39,4 +39,3 @@ class xl_data{
     }
 }
 ?>
-
