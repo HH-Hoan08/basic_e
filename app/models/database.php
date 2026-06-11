@@ -7,10 +7,10 @@ class database{
     private $is_conn = null; //biến dùng để kiểm tra thử đã kết nối vào db chưa
     
     public function __construct(){
-        $this->user = getenv('USER');
-        $this->host_name = getenv('HOST_NAME');
-        $this->pass = getenv('PASS');
-        $this->name_db = getenv('NAME_DB');
+        $this->user = getenv('USER') ?: 'root';
+        $this->host_name = getenv('HOST_NAME') ?: 'localhost';
+        $this->pass = getenv('PASS') !== false ? getenv('PASS') : '';
+        $this->name_db = getenv('NAME_DB') ?: 'basic_shop';
     }
     
     public function connect(){
@@ -25,4 +25,3 @@ class database{
     }
 }
 ?>
-

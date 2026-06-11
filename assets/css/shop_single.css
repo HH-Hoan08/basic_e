@@ -1,0 +1,33 @@
+#product-detail {
+    max-height: 450px;
+    object-fit: cover;
+}
+.product-wap .card-img {
+    height: 250px;
+    object-fit: contain;
+    background-color: #f8f8f8;
+}
+.thumb-img {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color .2s;
+}
+.thumb-img:hover, .thumb-img.active {
+    border-color: #198754;
+}
+.btn-size.active {
+    background-color: #146c43 !important;
+    outline: 2px solid #146c43;
+}
+.color-swatch {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px solid #dee2e6;
+    cursor: pointer;
+    display: inline-block;
+    transition: outline .15s;
+}
+.color-swatch.active, .color-swatch:hover {
+    outline: 2px solid #198754;
+    outline-offset: 2px;
+}

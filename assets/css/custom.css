@@ -9,3 +9,27 @@
     max-height: 450px;
     object-fit: cover;
 }
+
+.product-card {
+    border-radius: 12px;
+    transition: transform .2s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+}
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(33,41,52,.12) !important;
+}
+.product-img {
+    height: 260px;
+    object-fit: cover;
+    transition: transform .3s;
+}
+.product-card:hover .product-img { transform: scale(1.04); }
+
+.nav-pills .nav-link {
+    color: #212934;
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 14px;
+}
