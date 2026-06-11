@@ -5,6 +5,13 @@
         <div class="col-12">
             <h1 class="h2 mb-4">Giỏ hàng của bạn</h1>
             
+            <?php if (!empty($success)): ?>
+                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fa fa-check-circle me-2"></i><?= htmlspecialchars($success) ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+            
             <?php if (empty($cart)): ?>
                 <div class="alert alert-info text-center py-4">
                     Giỏ hàng của bạn đang trống. <br>
@@ -51,7 +58,7 @@
                                     </td>
                                     <td><strong class="text-danger"><?= number_format($itemTotal, 0, ',', '.') ?>đ</strong></td>
                                     <td>
-                                        <a href="index.php?page=cart&action=remove&key=<?= $key ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">Xóa</a>
+                                        <a href="index.php?page=cart&action=remove&key=<?= $key ?>" class="btn btn-sm btn-outline-danger">Xóa</a>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>

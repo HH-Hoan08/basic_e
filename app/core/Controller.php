@@ -1,8 +1,18 @@
 <?php
 class Controller {
     public function model($model) {
-        // Giả định tên file model là chữ thường
-        require_once ROOT_PATH . '/app/models/' . strtolower($model) . '.php';
+        $exactPath   = ROOT_PATH . '/app/models/' . $model . '.php';
+        $lcfirstPath = ROOT_PATH . '/app/models/' . lcfirst($model) . '.php';
+        $lowerPath   = ROOT_PATH . '/app/models/' . strtolower($model) . '.php';
+
+        if (file_exists($exactPath)) {
+            require_once $exactPath;
+        } elseif (file_exists($lcfirstPath)) {
+            require_once $lcfirstPath;
+        } else {
+            require_once $lowerPath;
+        }
+
         return new $model();
     }
 

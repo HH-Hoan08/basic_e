@@ -20,10 +20,18 @@ class CartController extends Controller {
             }
         }
 
+        // Lấy thông báo thành công (nếu có) và xóa ngay khỏi session để không hiện lại lúc f5
+        $success = null;
+        if (isset($_SESSION['cart_success'])) {
+            $success = $_SESSION['cart_success'];
+            unset($_SESSION['cart_success']);
+        }
+
         $this->view('cart', [
             'pageTitle' => 'Basic Shop - Giỏ Hàng',
             'page' => 'cart',
-            'cart' => $_SESSION['cart']
+            'cart' => $_SESSION['cart'],
+            'success' => $success
         ]);
     }
 
@@ -81,6 +89,7 @@ class CartController extends Controller {
         $cartKey = $_GET['key'] ?? null;
         if ($cartKey && isset($_SESSION['cart'][$cartKey])) {
             unset($_SESSION['cart'][$cartKey]);
+            $_SESSION['cart_success'] = "Đã xóa sản phẩm khỏi giỏ hàng thành công!";
         }
         header("Location: index.php?page=cart");
         exit();
