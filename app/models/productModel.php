@@ -101,6 +101,20 @@ class ProductModel {
         return $row ? new Product($row) : null;
     }
 
+    public function getById(int $id): ?Product {
+        $stmt = $this->db->prepare(
+            "SELECT p.*, b.name AS brand_name, c.name AS category_name, c.id AS cat_id
+             FROM   products p
+             LEFT JOIN brands     b ON p.brand_id    = b.id
+             LEFT JOIN categories c ON p.category_id = c.id
+             WHERE  p.id = ? AND p.is_active = 1 LIMIT 1"
+        );
+        $stmt->bindValue(1, $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? new Product($row) : null;
+    }
+
     /**
      * Lấy biến thể — trả về ProductVariant[]
      * @return ProductVariant[]
