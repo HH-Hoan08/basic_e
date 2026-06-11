@@ -91,10 +91,57 @@
                         <i class="fa fa-fw fa-search text-dark mr-2"></i>
                     </a>
 
-                    <div class="dropdown">
+                    <!-- Mini Cart Dropdown -->
+                    <div class="dropdown d-inline-block">
+                        <a class="nav-icon position-relative text-decoration-none dropdown-toggle" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-fw fa-cart-arrow-down text-dark mr-1"></i>
+                            <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark" style="transform: translate(-50%, -50%) !important;">
+                                <?php echo isset($_SESSION['cart']) ? count($_SESSION['cart']) : '0'; ?>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-3 shadow" aria-labelledby="cartDropdown" style="width: 320px;">
+                            <li><h6 class="dropdown-header text-dark px-0 py-1">Giỏ hàng của bạn</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <?php if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])): ?>
+                                <li><div class="text-center text-muted my-3">Giỏ hàng trống</div></li>
+                            <?php else: ?>
+                                <?php 
+                                    $totalPrice = 0;
+                                    foreach(array_slice($_SESSION['cart'], 0, 3) as $item): 
+                                        $totalPrice += ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+                                ?>
+                                    <li>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <img src="assets/img/<?php echo htmlspecialchars($item['image'] ?? 'shop_01.jpg'); ?>" alt="..." class="img-thumbnail me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                            <div class="flex-grow-1" style="overflow: hidden;">
+                                                <h6 class="mb-0 text-truncate" style="font-size: 0.9rem;" title="<?php echo htmlspecialchars($item['name'] ?? 'Sản phẩm'); ?>"><?php echo htmlspecialchars($item['name'] ?? 'Sản phẩm'); ?></h6>
+                                                <small class="text-muted"><?php echo htmlspecialchars($item['quantity'] ?? '1'); ?> x <?php echo number_format($item['price'] ?? 0, 0, ',', '.'); ?>đ</small>
+                                            </div>
+                                        </div>
+                                    </li>
+                                <?php endforeach; ?>
+                                <?php if(count($_SESSION['cart']) > 3): ?>
+                                    <li><div class="text-center text-muted small my-1">... và <?php echo count($_SESSION['cart']) - 3; ?> sản phẩm khác</div></li>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="btn btn-success w-100 btn-sm" href="index.php?page=cart">Xem Chi Tiết Giỏ Hàng</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="dropdown d-inline-block">
                         <a class="nav-icon position-relative text-decoration-none dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa fa-fw fa-user text-dark mr-3"></i>
-                            <!-- hiện thông báo mới của người dùng (cập nhật sau) -->
+                            <?php if ($isLoggedIn && isset($currentUserInfo) && !empty($currentUserInfo['image']) && $currentUserInfo['image'] !== 'default.png'): ?>
+                                <!-- Hiển thị ảnh đại diện nếu có -->
+                                <img src="assets/img/avatars/<?= htmlspecialchars($currentUserInfo['image']) ?>" alt="Avatar" class="rounded-circle mr-2" style="width: 30px; height: 30px; object-fit: cover; border: 1px solid #59ab6e;">
+                                <span class="text-dark"><strong><?= htmlspecialchars($currentUserInfo['username']) ?></strong></span>
+                            <?php else: ?>
+                                <!-- Icon mặc định nếu chưa đăng nhập hoặc chưa có ảnh -->
+                                <i class="fa fa-fw fa-user text-dark mr-1"></i>
+                                <?php if ($isLoggedIn): ?><span class="text-dark"><strong><?= htmlspecialchars($_SESSION['user']) ?></strong></span><?php endif; ?>
+                            <?php endif; ?>
+                            
+                             <!-- hiện thông báo mới của người dùng (cập nhật sau) -->
                             <!-- <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark">+99</span> -->
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">

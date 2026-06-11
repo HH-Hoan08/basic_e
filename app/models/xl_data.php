@@ -1,6 +1,8 @@
 <?php 
-include "../models/database.php";
+include_once __DIR__ . '/database.php';
 class xl_data{
+    private $db;
+
     //lấy dữ liệu database
     public function __construct(){
         #Gọi class database để gọi hàm connect
@@ -17,7 +19,7 @@ class xl_data{
                 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 return $result ? $result : [];
             }catch(PDOException $e){
-                echo "Lỗi",  $e->getMessage() . "<br>";
+                // Không echo lỗi ra màn hình để Controller tự catch và xử lý ngầm
                 throw $e;
             }
         }
@@ -31,7 +33,7 @@ class xl_data{
                 $stmt = $db->prepare($sql); #kiểm tra cú pháp
                 return $stmt->execute($params);
             }catch(PDOException $e){
-                echo "Lỗi",  $e->getMessage() . "<br>";
+                // Không echo lỗi ra màn hình để Controller tự catch và xử lý ngầm
                 throw $e;
             }
         }
@@ -39,4 +41,3 @@ class xl_data{
     }
 }
 ?>
-

@@ -1,5 +1,5 @@
 <?php
-$action = isset($_GET['page']) && $_GET['page'] == 'register' ? 'register' : 'login';
+$action = ($page === 'register') ? 'register' : 'login';
 ?>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,7 +64,7 @@ $action = isset($_GET['page']) && $_GET['page'] == 'register' ? 'register' : 'lo
                         <div class="alert alert-success py-2 px-3 text-center" style="font-size: 14px;"><?= $success ?></div>
                     <?php endif; ?>
 
-                    <form action="app/controller/index.php?page=login" method="post">
+                    <form action="index.php?page=login" method="post">
                         <div class="field-group">
                             <label>Tên đăng nhập hoặc Email</label>
                             <div class="field-wrap">
@@ -83,7 +83,8 @@ $action = isset($_GET['page']) && $_GET['page'] == 'register' ? 'register' : 'lo
                                 <input type="password" name="password" placeholder="Nhập mật khẩu..." required>
                             </div>
                         </div>
-                        <button type="submit" class="btn-auth">Đăng nhập →</button>
+                        <!-- nút ấn đăng nhập -->
+                        <button type="submit" class="btn-auth">Đăng nhập →</button>  
                     </form>
 
                     <div class="auth-divider">hoặc</div>
@@ -112,7 +113,7 @@ $action = isset($_GET['page']) && $_GET['page'] == 'register' ? 'register' : 'lo
                         <div class="alert alert-danger py-2 px-3 text-center" style="font-size: 14px;"><?= $error ?></div>
                     <?php endif; ?>
 
-                    <form action="app/controller/index.php?page=register" method="post">
+                    <form action="index.php?page=register" method="post">
                         <div class="field-group">
                             <label>Tên đầy đủ</label>
                             <div class="field-wrap">
@@ -161,8 +162,7 @@ $action = isset($_GET['page']) && $_GET['page'] == 'register' ? 'register' : 'lo
 
             </div>
         </div>
-
     </div>
 </div>
 
-<?php include '../controller/auth_controller.php'; ?>
+<script src="assets/js/auth_controller.js?v=<?= time() ?>"></script>
