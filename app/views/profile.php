@@ -49,9 +49,9 @@ if (!$isLoggedIn) {
                                 <h5 class="card-title border-bottom pb-3 mb-3">Ảnh đại diện</h5>
                                 
                                 <?php 
-                                    $avatarSrc = (!empty($currentUserInfo['image']) && $currentUserInfo['image'] !== 'default.png') 
-                                        ? "assets/img/avatars/" . $currentUserInfo['image'] 
-                                        : "assets/img/category_img_03.jpg"; // Dùng ảnh tạm nếu chưa có
+                                    $avatarSrc = (!empty($currentUserInfo['image']) && $currentUserInfo['image'] !== 'default.png')
+                                        ? BASE_URL . "assets/img/avatars/" . $currentUserInfo['image']
+                                        : BASE_URL . "assets/img/category_img_03.jpg"; // Dùng ảnh tạm nếu chưa có
                                 ?>
                                 <img src="<?= htmlspecialchars($avatarSrc) ?>" alt="Avatar" class="rounded-circle img-thumbnail mb-3" style="width: 150px; height: 150px; object-fit: cover;">
                                 
@@ -150,16 +150,38 @@ if (!$isLoggedIn) {
                                         <?php foreach ($userOrders as $order): ?>
                                         <tr>
                                             <td><strong>#<?= htmlspecialchars($order['id'] ?? 'N/A') ?></strong></td>
-                                            <td><?= htmlspecialchars($order['created_at'] ?? 'N/A') ?></td>
-                                            <td><strong class="text-danger"><?= number_format($order['total_amount'] ?? 0, 0, ',', '.') ?>đ</strong></td>
+                                            <td><?= htmlspecialchars($order['ordered_at'] ?? 'N/A') ?></td>
+                                            <td><strong class="text-danger"><?= number_format($order['total_price'] ?? 0, 0, ',', '.') ?>đ</strong></td>
                                             <td>
-                                                <?php $status = $order['status'] ?? 'Đang xử lý'; ?>
-                                                <span class="badge bg-<?= ($status == 'Đã giao') ? 'success' : (($status == 'Đã hủy') ? 'danger' : 'warning') ?>">
-                                                    <?= htmlspecialchars($status) ?>
+                                                <?php 
+                                                    $statusText = [
+                                                        'pending' => 'Chờ xác nhận',
+                                                        'confirmed' => 'Đã xác nhận',
+                                                        'shipping' => 'Đang giao',
+                                                        'delivered' => 'Thành công',
+                                                        'cancelled' => 'Đã hủy'
+                                                    ];
+                                                    $statusBadges = [
+                                                        'pending' => 'bg-warning text-dark',
+                                                        'confirmed' => 'bg-info text-dark',
+                                                        'shipping' => 'bg-primary',
+                                                        'delivered' => 'bg-success',
+                                                        'cancelled' => 'bg-danger'
+                                                    ];
+                                                    $currentStatus = $order['status'] ?? 'pending';
+                                                ?>
+                                                <span class="badge <?= $statusBadges[$currentStatus] ?? 'bg-secondary' ?>">
+                                                    <?= htmlspecialchars($statusText[$currentStatus] ?? ucfirst($currentStatus)) ?>
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="#" class="btn btn-sm btn-outline-success"><i class="fa fa-eye"></i> Xem chi tiết</a>
+                                                <a href="index.php?page=profile&action=view_order&order_id=<?= $order['id'] ?>" class="btn btn-sm btn-outline-success"><i class="fa fa-eye"></i> Xem chi tiết</a>
+                                                <?php if ($currentStatus === 'pending'): ?>
+                                                    <form action="index.php?page=profile&action=cancel_order" method="POST" class="d-inline-block m-0 p-0" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?');">
+                                                        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">Hủy đơn</button>
+                                                    </form>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>

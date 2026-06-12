@@ -1,5 +1,9 @@
 <?php
-session_start();
+// File router này đang được sử dụng theo cách cũ.
+// Để các thành phần MVC như CartController và AdminController hoạt động,
+// chúng ta cần nạp file Controller.php gốc của hệ thống.
+include_once __DIR__ . '/../core/Controller.php';
+@session_start();
 
 define('BASE_URL', 'http://localhost/basic_e/');
 $isLoggedIn = isset($_SESSION['user']);
@@ -34,12 +38,48 @@ if ($isLoggedIn) {
     $userAuthModel = new UserAuth();
     $currentUserInfo = $userAuthModel->getUserByUsername($_SESSION['user']);
     
+    // Handle order cancellation
+    if ($page === 'profile' && ($_GET['action'] ?? '') === 'cancel_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        include_once __DIR__ . '/../models/OrderModel.php';
+        $orderModel = new OrderModel();
+        $orderId = (int)($_POST['order_id'] ?? 0);
+        $userId = $currentUserInfo['id']; // Lấy ID người dùng đã được truy vấn ở trên
+
+        try {
+            if ($orderModel->cancelOrder($orderId, $userId)) {
+                 $_SESSION['profile_success'] = "Đã hủy đơn hàng #" . $orderId . " thành công. Hàng trong kho đã được cập nhật.";
+            } else {
+                 $_SESSION['profile_error'] = "Không thể hủy đơn hàng. Vui lòng liên hệ hỗ trợ.";
+            }
+        } catch (Exception $e) {
+            $_SESSION['profile_error'] = "Lỗi hủy đơn hàng: " . $e->getMessage();
+        }
+        // Chuyển hướng về tab đơn hàng
+        header("Location: " . BASE_URL . "index.php?page=profile#orders");
+        exit();
+    }
+
     if ($page === 'profile') {
+        // Lấy thông báo từ session và gán vào biến $success, $error để view có thể hiển thị
+        // Điều này cũng sẽ lấy thông báo từ các trang khác (vd: checkout thành công)
+        if (isset($_SESSION['profile_success'])) {
+            $success = $_SESSION['profile_success'];
+            unset($_SESSION['profile_success']);
+        }
+        if (isset($_SESSION['profile_error'])) {
+            $error = $_SESSION['profile_error'];
+            unset($_SESSION['profile_error']);
+        }
+
         $profileData = $profileController->handleProfile();
         if (!empty($profileData['error'])) $error = $profileData['error'];
         if (!empty($profileData['success'])) $success = $profileData['success'];
         $currentUserInfo = $profileData['userInfo'];
         $userOrders = $profileData['orders'];
+
+        if (isset($_GET['action']) && $_GET['action'] === 'view_order') {
+            // ProfileController sẽ tự xử lý việc render view order_detail
+        }
     }
 }
 
@@ -63,7 +103,10 @@ if ($page === 'about') {
 
 //Giao diện
 
-include '../views/inc/header.php';
+// Chỉ load Header và Footer của trang khách nếu không phải là trang admin
+if (strpos($page, 'admin') === false) {
+    include '../views/inc/header.php';
+}
 
 switch ($page) {
     case 'shop':
@@ -85,10 +128,25 @@ switch ($page) {
     case 'profile':
         include '../views/profile.php';
         break;
+    case 'admin':
+        // Điều hướng toàn bộ chức năng admin sang AdminController
+        include_once './AdminController.php';
+        $adminController = new AdminController();
+        $adminController->index();
+        break;
+    case 'cart':
+        include_once './CartController.php';
+        // Giờ đây, CartController có thể kế thừa từ lớp Controller đã được nạp ở trên
+        // và sử dụng các phương thức như model() hoặc view() một cách chính xác.
+        $cartController = new CartController();
+        $cartController->index();
+        break;
     default:
         include '../views/home.php';
         break;
 }
 
-include '../views/inc/footer.php';
+if (strpos($page, 'admin') === false) {
+    include '../views/inc/footer.php';
+}
 ?>

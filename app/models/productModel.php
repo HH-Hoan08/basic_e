@@ -67,18 +67,19 @@ class ProductModel {
                 WHERE  " . implode(' AND ', $where) . "
                 ORDER  BY $sort LIMIT ? OFFSET ?";
 
-        $params[] = $limit;
-        $params[] = $offset;
-        $types   .= 'ii';
-
         $stmt = $this->db->prepare($sql);
-        if (!empty($params)) {
-            for ($i = 0; $i < count($params); $i++) {
-                $stmt->bindValue($i + 1, $params[$i], $types[$i] === 'i' ? PDO::PARAM_INT : PDO::PARAM_STR);
-            }
-        }
-        $stmt->execute();
 
+        // Bind các tham số cho mệnh đề WHERE. PDO thường có thể tự xác định kiểu dữ liệu cho các tham số này.
+        $paramIndex = 1;
+        foreach ($params as $param) {
+            $stmt->bindValue($paramIndex++, $param);
+        }
+
+        // Bind tường minh LIMIT và OFFSET dưới dạng số nguyên để tránh lỗi SQL.
+        $stmt->bindValue($paramIndex++, $limit, PDO::PARAM_INT);
+        $stmt->bindValue($paramIndex++, $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Chuyển mảng thô thành mảng Product objects
@@ -219,6 +220,12 @@ class ProductModel {
             $params[] = (int)$filter['brand_id'];
             $types   .= 'i';
         }
+        // Sửa lỗi: Thiếu bộ lọc category_id trong hàm count
+        if (!empty($filter['category_id'])) {
+            $where[]  = 'p.category_id = ?';
+            $params[] = (int)$filter['category_id'];
+            $types   .= 'i';
+        }
         if (!empty($filter['on_sale']))   $where[] = 'p.sale_price IS NOT NULL';
         if (!empty($filter['q'])) {
             $where[]  = '(p.name LIKE ? OR p.brand LIKE ?)';
@@ -230,12 +237,56 @@ class ProductModel {
 
         $sql  = "SELECT COUNT(*) FROM products p WHERE " . implode(' AND ', $where);
         $stmt = $this->db->prepare($sql);
-        if (!empty($params)) {
-            for ($i = 0; $i < count($params); $i++) {
-                $stmt->bindValue($i + 1, $params[$i], $types[$i] === 'i' ? PDO::PARAM_INT : PDO::PARAM_STR);
-            }
-        }
-        $stmt->execute();
+        $stmt->execute($params);
         return (int)$stmt->fetchColumn();
+    }
+
+    // ==========================================
+    // REVIEW-RELATED METHODS
+    // ==========================================
+
+    public function canUserReviewProduct(int $userId, int $productId): array {
+        // 1. Check if user has already reviewed this product
+        $sqlCheckReviewed = "SELECT COUNT(*) FROM reviews WHERE user_id = ? AND product_id = ?";
+        $stmt = $this->db->prepare($sqlCheckReviewed);
+        $stmt->execute([$userId, $productId]);
+        if ($stmt->fetchColumn() > 0) {
+            return ['can' => false, 'reason' => 'Bạn đã đánh giá sản phẩm này.'];
+        }
+
+        // 2. Check if user has purchased this product (and order is completed/delivered)
+        // The schema uses 'delivered', but the app code uses 'completed'. We'll check for 'delivered'.
+        $sqlCheckPurchased = "SELECT COUNT(*) 
+                              FROM orders o 
+                              JOIN order_items oi ON o.id = oi.order_id 
+                              WHERE o.user_id = ? AND oi.product_id = ? AND o.status = 'delivered'";
+        $stmt = $this->db->prepare($sqlCheckPurchased);
+        $stmt->execute([$userId, $productId]);
+        if ($stmt->fetchColumn() == 0) {
+            return ['can' => false, 'reason' => 'Bạn cần mua và nhận hàng thành công để đánh giá sản phẩm này.'];
+        }
+
+        return ['can' => true, 'reason' => ''];
+    }
+
+    public function addReview(int $userId, int $productId, int $rating, string $comment): bool {
+        $sql = "INSERT INTO reviews (user_id, product_id, rating, comment, is_visible, created_at) 
+                VALUES (?, ?, ?, ?, 1, NOW())";
+        $stmt = $this->db->prepare($sql);
+        $success = $stmt->execute([$userId, $productId, $rating, $comment]);
+
+        if ($success) {
+            $this->updateProductAvgRating($productId);
+        }
+        return $success;
+    }
+
+    public function updateProductAvgRating(int $productId): void {
+        // Recalculates the average rating for a product based on visible reviews.
+        $sql = "UPDATE products p SET 
+                    p.avg_rating = (SELECT COALESCE(AVG(rating), 0) FROM reviews WHERE product_id = p.id AND is_visible = 1)
+                WHERE p.id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$productId]);
     }
 }

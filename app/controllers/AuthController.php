@@ -18,6 +18,7 @@ class AuthController extends Controller {
 
             if (!empty($user) && password_verify($password, $user[0]['password'])) {
                 $_SESSION['user'] = $user[0]['username'];
+                $_SESSION['role'] = $user[0]['role'] ?? 'user';
                 header("Location: " . BASE_URL);
                 exit();
             } else {
@@ -72,7 +73,8 @@ class AuthController extends Controller {
     }
 
     public function logout() {
-        unset($_SESSION['user']);
+        session_unset();    // Xóa tất cả các biến trong session (bao gồm cart, role...)
+        session_destroy();  // Phá hủy hoàn toàn phiên làm việc hiện tại
         header("Location: " . BASE_URL);
         exit();
     }

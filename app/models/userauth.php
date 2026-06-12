@@ -38,11 +38,11 @@
         }
 
         // Lấy danh sách lịch sử đơn hàng của người dùng
-        public function getUserOrders($username){
+        public function getUserOrders(int $userId){ // Thay đổi tham số từ username sang userId
             // Try-catch đề phòng trường hợp bảng orders chưa tồn tại trong Database
             try {
-                $sql = 'SELECT * FROM orders WHERE username = ? ORDER BY created_at DESC';
-                return $this->read_item($sql, [$username]);
+                $sql = 'SELECT * FROM orders WHERE user_id = ? ORDER BY ordered_at DESC'; // Sửa username thành user_id và created_at thành ordered_at
+                return $this->read_item($sql, [$userId]);
             } catch (Exception $e) {
                 return []; 
             }

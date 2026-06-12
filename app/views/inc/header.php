@@ -147,6 +147,10 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             
                             <?php if ($isLoggedIn): ?>
+                                <?php if (isset($currentUserInfo['role']) && $currentUserInfo['role'] === 'admin'): ?>
+                                    <li><a class="dropdown-item text-success fw-bold" href="index.php?page=admin"><i class="fas fa-user-shield me-1"></i> Quản trị Admin</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                <?php endif; ?>
                                 <li><a class="dropdown-item" href="index.php?page=profile">Thông tin tài khoản</a></li>
                                 <li><a class="dropdown-item" href="index.php?page=orders">Đơn hàng của tôi</a></li>
                                 <li><hr class="dropdown-divider"></li>

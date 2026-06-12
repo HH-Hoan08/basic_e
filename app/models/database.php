@@ -7,10 +7,12 @@ class database{
     private $is_conn = null; //biến dùng để kiểm tra thử đã kết nối vào db chưa
     
     public function __construct(){
-        $this->user = getenv('USER');
-        $this->host_name = getenv('HOST_NAME');
-        $this->pass = getenv('PASS');
-        $this->name_db = getenv('NAME_DB');
+        // Sử dụng thông tin kết nối trực tiếp để đảm bảo ổn định.
+        // Đây là cấu hình mặc định cho XAMPP.
+        $this->host_name = 'localhost';
+        $this->name_db = 'basic_shop';
+        $this->user = 'root';
+        $this->pass = '';
     }
     
     public function connect(){

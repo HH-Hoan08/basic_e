@@ -12,6 +12,13 @@
                 </div>
             <?php endif; ?>
             
+            <?php if (!empty($error)): ?>
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fa fa-exclamation-triangle me-2"></i><?= htmlspecialchars($error) ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+            
             <?php if (empty($cart)): ?>
                 <div class="alert alert-info text-center py-4">
                     Giỏ hàng của bạn đang trống. <br>
@@ -31,16 +38,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php 
-                                    $totalAmount = 0;
-                                    foreach ($cart as $key => $item): 
-                                        $itemTotal = ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
-                                        $totalAmount += $itemTotal;
-                                ?>
+                                <?php foreach ($cart as $key => $item): 
+                                    $itemTotal = ($item['price'] ?? 0) * ($item['quantity'] ?? 1); ?>
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="assets/img/<?= htmlspecialchars($item['image'] ?? 'shop_01.jpg') ?>" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;" alt="...">
+                                            <img src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($item['image'] ?? 'shop_01.jpg') ?>" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;" alt="...">
                                             <div>
                                                 <h6 class="mb-0"><?= htmlspecialchars($item['name'] ?? 'Sản phẩm') ?></h6>
                                                 <?php if(!empty($item['size'])): ?>
@@ -63,23 +66,50 @@
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3" class="text-end fw-bold">Tổng tiền thanh toán:</td>
-                                    <td><strong class="text-danger fs-5"><?= number_format($totalAmount, 0, ',', '.') ?>đ</strong></td>
-                                    <td></td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="index.php?page=shop" class="btn btn-outline-secondary">Tiếp tục mua sắm</a>
-                        <div>
-                            <button type="submit" class="btn btn-secondary me-2">Cập nhật giỏ hàng</button>
-                            <a href="index.php?page=checkout" class="btn btn-success">Tiến hành thanh toán</a>
-                        </div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-secondary">Cập nhật giỏ hàng</button>
                     </div>
                 </form>
+
+                <div class="row mt-4">
+                    <!-- Voucher Form -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Mã giảm giá</h5>
+                                <?php if (isset($voucher)): ?>
+                                    <div class="alert alert-success d-flex justify-content-between align-items-center p-2">
+                                        <span>Đang áp dụng: <strong><?= htmlspecialchars($voucher['code']) ?></strong></span>
+                                        <a href="index.php?page=cart&action=remove_voucher" class="btn-close"></a>
+                                    </div>
+                                <?php else: ?>
+                                    <form action="index.php?page=cart&action=apply_voucher" method="POST" class="d-flex gap-2">
+                                        <input type="text" name="voucher_code" class="form-control text-uppercase" placeholder="Nhập mã voucher">
+                                        <button type="submit" class="btn btn-success">Áp dụng</button>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title mb-3">Tổng cộng</h5>
+                                <div class="d-flex justify-content-between mb-2"><span>Tạm tính:</span> <span><?= number_format($subtotal, 0, ',', '.') ?>đ</span></div>
+                                <?php if (isset($voucher)): ?>
+                                    <div class="d-flex justify-content-between mb-2 text-success"><span>Giảm giá (<?= htmlspecialchars($voucher['code']) ?>):</span> <span>- <?= number_format($discountAmount, 0, ',', '.') ?>đ</span></div>
+                                <?php endif; ?>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold fs-5"><span class="text-danger">Thành tiền:</span> <span class="text-danger"><?= number_format($finalTotal, 0, ',', '.') ?>đ</span></div>
+                                <a href="index.php?page=cart&action=checkout" class="btn btn-lg btn-success w-100 mt-3">Tiến hành thanh toán</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
     </div>

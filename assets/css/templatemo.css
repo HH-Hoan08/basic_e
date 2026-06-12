@@ -70,7 +70,21 @@ body, ul, li, p, a, label, input, div {
 #templatemo_main_nav .navbar .nav-icon { margin-right: 20px;}
 
 /* Băng chuyền chính */
-#template-mo-zay-hero-carousel { background: #efefef !important;}
+/*
+ * GIẢI PHÁP HÌNH ẢNH THỐNG NHẤT
+ * Các quy tắc tập trung để chống "ảnh mờ" và "co giật" (layout shift).
+ * Đảm bảo ảnh hiển thị nguyên vẹn (contain) và không bị cắt xén.
+*/
+
+/* -- 1. Banner chính (home.php) -- */
+#template-mo-zay-hero-carousel .carousel-item .img-fluid {
+    width: 100%;
+    height: 75vh; /* Chiều cao bằng 75% chiều cao màn hình */
+    max-height: 500px; /* Giới hạn chiều cao tối đa */
+    object-fit: contain; /* Hiển thị toàn bộ ảnh, không cắt xén */
+    object-position: center;
+    background-color: #efefef; /* Thêm màu nền để lấp đầy khoảng trống nếu ảnh không vừa khung */
+}
 /* Accordion */
 .templatemo-accordion a { color: #000;}
 .templatemo-accordion a:hover { color: #333d4a;}
@@ -78,6 +92,53 @@ body, ul, li, p, a, label, input, div {
 .shop-top-menu a:hover { color: #69bb7e !important;}
 /* Sản phẩm */
 .product-wap { box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.10);}
+
+/*
+ * GIẢI PHÁP HÌNH ẢNH THỐNG NHẤT
+ * Các quy tắc tập trung để chống "ảnh mờ" và "co giật" (layout shift).
+*/
+
+/* -- 1. Lưới sản phẩm (Trang shop, SP liên quan,...) -- */
+/* Tạo khung chứa hình vuông để chống "co giật" */
+.product-img-container {
+  display: block;
+  position: relative;
+  padding-top: 100%; /* Tỷ lệ 1:1 */
+  background-color: #f8f9fa;
+}
+
+/* Ảnh sản phẩm bên trong khung */
+.product-img-container .product-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Hiển thị toàn bộ ảnh, không cắt xén */
+}
+
+/* -- 2. Trang chi tiết sản phẩm (shop-single) -- */
+/* Ảnh chính và ảnh thumbnail */
+#product-detail,
+.thumb-img {
+    object-fit: contain;
+    background-color: #f8f9fa;
+}
+
+/* Giới hạn chiều cao ảnh chính để không quá lớn */
+#product-detail {
+    max-height: 500px;
+    width: 100%;
+}
+
+/* Cải thiện UX cho ảnh thumbnail */
+.thumb-img {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color .2s;
+    height: 90px;
+}
+
 .product-wap .product-color-dot.color-dot-red { background:#f71515;}
 .product-wap .product-color-dot.color-dot-blue { background:#6db4fe;}
 .product-wap .product-color-dot.color-dot-black { background:#000000;}

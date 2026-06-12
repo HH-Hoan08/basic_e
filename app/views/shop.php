@@ -1,4 +1,21 @@
 <?php $pageTitle = 'Cửa hàng — Basic Shop'; ?>
+<style>
+    .product-img-container {
+        display: block;
+        position: relative;
+        padding-top: 100%; /* 100% của chiều rộng -> tạo ra khung hình vuông 1:1 */
+        background-color: #f8f9fa; /* Màu nền giữ chỗ */
+    }
+    .product-img-container .product-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Sửa lại: Hiển thị toàn bộ ảnh, không bị cắt xén */
+    }
+</style>
+
 <!-- Modal tìm kiếm -->
 <div class="modal fade bg-white" id="templatemo_search" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -148,14 +165,13 @@
                                 </span>
                             <?php endif; ?>
                             
-                            <!-- link ảnh sản phẩm, nếu ảnh lỗi sẽ hiển thị ảnh mặc định no-image.jpg
-                            <a href="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= $p->getSlug() ?>">
+                            <!-- link ảnh sản phẩm, nếu ảnh lỗi sẽ hiển thị ảnh mặc định no-image.jpg -->
+                            <a href="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= $p->getSlug() ?>" class="product-img-container">
                                 <img src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($p->getImage() ?? 'no-image.jpg') ?>"
                                     class="card-img-top product-img"
                                     alt="<?= htmlspecialchars($p->getName()) ?>"
                                     onerror="this.src='<?= BASE_URL ?>assets/img/no-image.jpg'">
-                            </a> -->
-                           
+                            </a>
 
                             <div class="card-body">
                                 <p class="text-muted small mb-1">

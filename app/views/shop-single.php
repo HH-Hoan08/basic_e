@@ -15,6 +15,18 @@ foreach ($variants as $v) {
 
 <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/shop_single.css">
 
+<!--
+    CSS Fix: Đảm bảo ảnh sản phẩm (cả chính và thumbnail) hiển thị nguyên vẹn,
+    không bị phóng to hay cắt xén. Sử dụng object-fit: contain để ảnh vừa vặn
+    trong khung chứa của nó.
+-->
+<style>
+    #product-detail, .thumb-img {
+        object-fit: contain; /* Hiển thị toàn bộ ảnh, không bị cắt xén */
+        background-color: #f8f9fa; /* Thêm màu nền cho phần trống (nếu có) */
+    }
+</style>
+
 <!-- Bắt đầu Nội dung -->
 <section class="bg-light">
     <div class="container pb-5">
@@ -25,8 +37,11 @@ foreach ($variants as $v) {
 
                 <!-- Ảnh chính -->
                 <div class="card mb-3">
+                    <?php
+                        $mainImageUrl = BASE_URL . 'assets/img/' . ($product->getImage() ?? 'no-image.jpg');
+                    ?>
                     <img class="card-img img-fluid"
-                         src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($product->getImage() ?? 'no-image.jpg') ?>"
+                         src="<?= htmlspecialchars($mainImageUrl) ?>"
                          alt="<?= htmlspecialchars($product->getName()) ?>"
                          id="product-detail"
                          onerror="this.src='<?= BASE_URL ?>assets/img/no-image.jpg'">
@@ -56,14 +71,15 @@ foreach ($variants as $v) {
                                         <div class="row">
                                             <?php foreach ($chunk as $img): ?>
                                                 <div class="col-4">
-                                                    <a href="#"
-                                                       onclick="changeMainImg(
-                                                           '<?= BASE_URL ?>assets/img/<?= htmlspecialchars($img->getImageUrl()) ?>',
-                                                           this
-                                                       ); return false;">
+                                                    <?php
+                                                        // Giả định getImageUrl() trả về tên file, cần thêm đường dẫn đầy đủ
+                                                        $thumbUrl = BASE_URL . 'assets/img/' . ($img->getImageUrl() ?? 'no-image.jpg');
+                                                    ?>
+                                                    <a href="#" onclick="changeMainImg('<?= htmlspecialchars($thumbUrl) ?>', this); return false;">
                                                         <img class="card-img img-fluid thumb-img"
-                                                             src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($img->getImageUrl()) ?>"
-                                                             alt="<?= htmlspecialchars($product->getName()) ?>">
+                                                         src="<?= htmlspecialchars($thumbUrl) ?>"
+                                                         alt="<?= htmlspecialchars($product->getName()) ?>"
+                                                         onerror="this.src='<?= BASE_URL ?>assets/img/no-image.jpg'">
                                                     </a>
                                                 </div>
                                             <?php endforeach; ?>
@@ -77,10 +93,10 @@ foreach ($variants as $v) {
                                     <div class="row">
                                         <?php for ($i = 0; $i < 3; $i++): ?>
                                             <div class="col-4">
-                                                <a href="#">
-                                                    <img class="card-img img-fluid thumb-img"
-                                                         src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($product->getImage() ?? 'no-image.jpg') ?>"
-                                                         alt="<?= htmlspecialchars($product->getName()) ?>">
+                                                <a href="#" onclick="changeMainImg('<?= htmlspecialchars($mainImageUrl) ?>', this); return false;">
+                                                    <img class="card-img img-fluid thumb-img" src="<?= htmlspecialchars($mainImageUrl) ?>"
+                                                         alt="<?= htmlspecialchars($product->getName()) ?>"
+                                                         onerror="this.src='<?= BASE_URL ?>assets/img/no-image.jpg'">
                                                 </a>
                                             </div>
                                         <?php endfor; ?>
@@ -333,6 +349,77 @@ foreach ($variants as $v) {
 </section>
 <?php endif; ?>
 
+<!-- ===== VIẾT BÌNH LUẬN ===== -->
+<section class="py-5">
+    <div class="container">
+        <h5 class="mb-3">Viết đánh giá của bạn</h5>
+
+        <?php if (isset($reviewMessage)): ?>
+            <div class="alert alert-<?= htmlspecialchars($reviewMessage['type']) ?>"><?= htmlspecialchars($reviewMessage['text']) ?></div>
+        <?php endif; ?>
+
+        <?php if ($canReview['can']): ?>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form action="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= $product->getSlug() ?>" method="POST">
+                        <input type="hidden" name="submit_review" value="1">
+                        <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
+                        <input type="hidden" name="slug" value="<?= $product->getSlug() ?>">
+
+                        <div class="mb-3">
+                            <label class="form-label">Chấm điểm của bạn:</label>
+                            <div class="rating-stars">
+                                <input type="radio" name="rating" id="rs5" value="5" required><label for="rs5">★</label>
+                                <input type="radio" name="rating" id="rs4" value="4"><label for="rs4">★</label>
+                                <input type="radio" name="rating" id="rs3" value="3"><label for="rs3">★</label>
+                                <input type="radio" name="rating" id="rs2" value="2"><label for="rs2">★</label>
+                                <input type="radio" name="rating" id="rs1" value="1"><label for="rs1">★</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Bình luận của bạn:</label>
+                            <textarea name="comment" id="comment" class="form-control" rows="4" placeholder="Sản phẩm rất tuyệt vời..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">Gửi đánh giá</button>
+                    </form>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-warning">
+                <i class="fa fa-info-circle me-2"></i>
+                <?= htmlspecialchars($canReview['reason']) ?>
+                <?php if (!isset($_SESSION['user'])): ?>
+                    <a href="<?= BASE_URL ?>index.php?page=login" class="alert-link">Đăng nhập ngay</a>.
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+</section>
+
+<style>
+.rating-stars {
+    display: inline-block;
+    direction: rtl; /* Right to left to make stars select from left */
+}
+.rating-stars input[type="radio"] {
+    display: none;
+}
+.rating-stars label {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.rating-stars input[type="radio"]:checked ~ label,
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    color: #ffc107;
+}
+</style>
+
+
 <!-- Bắt đầu Sản phẩm liên quan -->
 <section class="py-5">
     <div class="container">
@@ -345,12 +432,17 @@ foreach ($variants as $v) {
             <?php if (!empty($related)): ?>
                 <?php foreach ($related as $rp): ?>
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                        <div class="product-wap card rounded-0">
-                            <div class="card rounded-0">
-                                <img class="card-img rounded-0 img-fluid"
-                                     src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($rp->getImage() ?? 'no-image.jpg') ?>"
-                                     alt="<?= htmlspecialchars($rp->getName()) ?>"
-                                     onerror="this.src='<?= BASE_URL ?>assets/img/no-image.jpg'">
+                        <div class="card h-100 product-wap rounded-0">
+                            <div class="card-header p-0 position-relative">
+                                <a href="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= $rp->getSlug() ?>" class="product-img-container">
+                                    <?php
+                                        $relatedImgUrl = BASE_URL . 'assets/img/' . ($rp->getImage() ?? 'no-image.jpg');
+                                    ?>
+                                    <img class="card-img rounded-0 img-fluid product-img"
+                                        src="<?= htmlspecialchars($relatedImgUrl) ?>"
+                                        alt="<?= htmlspecialchars($rp->getName()) ?>"
+                                        onerror="this.src='<?= BASE_URL ?>assets/img/no-image.jpg'">
+                                </a>
                                 <div class="card-img-overlay rounded-0 product-overlay d-flex align-items-center justify-content-center">
                                     <ul class="list-unstyled">
                                         <li>
@@ -410,7 +502,6 @@ foreach ($variants as $v) {
                                 </p>
                             </div>
                         </div>
-                    </div>
                 <?php endforeach; ?>
 
             <?php else: ?>

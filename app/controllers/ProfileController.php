@@ -10,6 +10,11 @@ class ProfileController extends Controller {
         $username = $_SESSION['user'];
         
         $error = '';
+        // Lấy thông báo từ session (nếu có)
+        if (isset($_SESSION['profile_error'])) {
+            $error = $_SESSION['profile_error'];
+            unset($_SESSION['profile_error']);
+        }
         $success = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -63,7 +68,17 @@ class ProfileController extends Controller {
         }
 
         $userInfo = $userModel->getUserByUsername($username);
-        $orders = $userModel->getUserOrders($username);
+        $orders = [];
+        // Đảm bảo $userInfo tồn tại và có 'id' trước khi lấy đơn hàng
+        // Sửa lỗi: Truyền vào user ID (int) thay vì username (string)
+        if ($userInfo && isset($userInfo['id'])) {
+            $orders = $userModel->getUserOrders($userInfo['id']);
+        }
+
+        // Nếu có action là 'view_order', chuyển sang xử lý chi tiết đơn hàng
+        if (isset($_GET['action']) && $_GET['action'] === 'view_order') {
+            return $this->viewOrder($userInfo['id']);
+        }
 
         $this->view('profile', [
             'pageTitle' => 'Basic Shop - Tài khoản của tôi',
@@ -71,7 +86,30 @@ class ProfileController extends Controller {
             'error' => $error,
             'success' => $success,
             'currentUserInfo' => $userInfo,
-            'userOrders' => $orders
+            'userOrders' => $orders,
+        ]);
+    }
+
+    // Phương thức để xem chi tiết một đơn hàng cụ thể
+    private function viewOrder(int $userId) {
+        $orderId = (int)($_GET['order_id'] ?? 0);
+        $orderModel = $this->model('OrderModel');
+        $error = '';
+        $order = null;
+
+        try {
+            $order = $orderModel->getOrderDetails($orderId, $userId); // Truyền userId để xác thực quyền sở hữu
+            if (!$order) {
+                $error = "Không tìm thấy đơn hàng hoặc bạn không có quyền truy cập.";
+            }
+        } catch (Exception $e) {
+            $error = "Lỗi khi tải chi tiết đơn hàng: " . $e->getMessage();
+        }
+
+        $this->view('order_detail', [
+            'pageTitle' => 'Chi tiết đơn hàng #' . ($orderId > 0 ? $orderId : 'N/A'),
+            'order' => $order,
+            'error' => $error,
         ]);
     }
 }
