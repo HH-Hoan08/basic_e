@@ -405,17 +405,27 @@ class AdminModel {
     }
 
     public function updateVoucher(int $id, array $data): bool {
-        $sql = "UPDATE vouchers SET 
-                    code = :code, 
-                    type = :type, 
-                    value = :value, 
-                    quantity = :quantity, 
-                    expires_at = :expires_at, 
-                    is_active = :is_active 
+        $sql = "UPDATE vouchers SET
+                    code = :code,
+                    type = :type,
+                    value = :value,
+                    quantity = :quantity,
+                    expires_at = :expires_at,
+                    is_active = :is_active
                 WHERE id = :id";
-        $data['id'] = $id;
+
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute($data);
+
+        // Sử dụng bindValue để rõ ràng và an toàn hơn, đặc biệt với các giá trị NULL
+        $stmt->bindValue(':code', $data['code']);
+        $stmt->bindValue(':type', $data['type']);
+        $stmt->bindValue(':value', $data['value']);
+        $stmt->bindValue(':quantity', $data['quantity'], PDO::PARAM_INT);
+        $stmt->bindValue(':expires_at', $data['expires_at']); // PDO sẽ xử lý đúng kiểu (string hoặc NULL)
+        $stmt->bindValue(':is_active', $data['is_active'], PDO::PARAM_INT);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+
+        return $stmt->execute();
     }
 
     public function deleteVoucher(int $id): bool {
