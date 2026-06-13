@@ -319,82 +319,212 @@ foreach ($variants as $v) {
 </section>
 <!-- Kết thúc Nội dung -->
 
-<!-- ===== BÌNH LUẬN ===== -->
-<?php if (!empty($reviews)): ?>
-<section class="bg-light py-4 border-top">
+<!-- ===== BÌNH LUẬN & ĐÁNH GIÁ ===== -->
+<section id="reviews" class="bg-light py-4 border-top">
     <div class="container">
-        <h5 class="mb-3">Bình luận (<?= count($reviews) ?>)</h5>
         <div class="row">
-            <?php foreach ($reviews as $r): ?>
-                <div class="col-md-6 mb-3">
-                    <div class="card border-0 shadow-sm p-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <strong><?= htmlspecialchars($r->getUserFullname()) ?></strong>
-                            <small class="text-muted"><?= $r->getFormattedDate() ?></small>
-                        </div>
-                        <div class="mb-1">
-                            <?php for ($i = 1; $i <= 5; $i++): ?>
-                                <i class="fa fa-star <?= $i <= $r->getRating() ? 'text-warning' : 'text-secondary' ?>"
-                                   style="font-size:12px;"></i>
-                            <?php endfor; ?>
-                        </div>
-                        <p class="mb-0 text-muted small">
-                            <?= htmlspecialchars($r->getComment() ?? '') ?>
-                        </p>
+
+            <!-- Cột trái: Danh sách đánh giá -->
+            <div class="col-lg-7">
+                <h5 class="mb-3">
+                    <i class="fa fa-star text-warning me-1"></i>
+                    Đánh giá từ khách hàng
+                    <span class="badge bg-success ms-1"><?= count($reviews) ?></span>
+                </h5>
+
+                <?php if (!empty($reviewMessage)): ?>
+                    <div class="alert alert-<?= $reviewMessage['type'] ?> d-flex align-items-center gap-2">
+                        <i class="fa fa-<?= $reviewMessage['type'] === 'success' ? 'check-circle' : 'exclamation-circle' ?>"></i>
+                        <?= htmlspecialchars($reviewMessage['text']) ?>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
+                <?php endif; ?>
 
-<!-- ===== VIẾT BÌNH LUẬN ===== -->
-<section class="py-5">
-    <div class="container">
-        <h5 class="mb-3">Viết đánh giá của bạn</h5>
+                <?php if (empty($reviews)): ?>
+                    <div class="text-center py-4 text-muted border rounded-3">
+                        <i class="fa fa-comment-slash fa-2x mb-2 d-block"></i>
+                        Chưa có đánh giá nào. Hãy là người đầu tiên!
+                    </div>
+                <?php else: ?>
+                    <!-- Tổng quan rating -->
+                    <div class="card border-0 bg-white shadow-sm mb-3 p-3">
+                        <div class="row align-items-center">
+                            <div class="col-auto text-center">
+                                <div class="display-4 fw-bold text-success">
+                                    <?= number_format($product->getAvgRating(), 1) ?>
+                                </div>
+                                <div class="mb-1">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <i class="fa fa-star <?= $i <= $product->getRatingRounded() ? 'text-warning' : 'text-muted' ?>"
+                                           style="font-size:14px;"></i>
+                                    <?php endfor; ?>
+                                </div>
+                                <small class="text-muted"><?= count($reviews) ?> đánh giá</small>
+                            </div>
+                            <div class="col">
+                                <?php
+                                // Đếm số lượng mỗi mức sao
+                                $starCounts = [5=>0, 4=>0, 3=>0, 2=>0, 1=>0];
+                                foreach ($reviews as $r) {
+                                    $s = $r->getRating();
+                                    if (isset($starCounts[$s])) $starCounts[$s]++;
+                                }
+                                $total = count($reviews) ?: 1;
+                                foreach ([5,4,3,2,1] as $star):
+                                    $pct = round($starCounts[$star] / $total * 100);
+                                ?>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <small class="text-muted" style="width:30px;"><?= $star ?> <i class="fa fa-star text-warning" style="font-size:10px;"></i></small>
+                                        <div class="progress flex-grow-1" style="height:8px;">
+                                            <div class="progress-bar bg-warning"
+                                                 style="width:<?= $pct ?>%;"></div>
+                                        </div>
+                                        <small class="text-muted" style="width:30px;"><?= $starCounts[$star] ?></small>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
 
-        <?php if (isset($reviewMessage)): ?>
-            <div class="alert alert-<?= htmlspecialchars($reviewMessage['type']) ?>"><?= htmlspecialchars($reviewMessage['text']) ?></div>
-        <?php endif; ?>
+                    <!-- Danh sách review -->
+                    <?php foreach ($reviews as $r): ?>
+                        <div class="card border-0 shadow-sm mb-2">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold"
+                                             style="width:36px;height:36px;font-size:14px;flex-shrink:0;">
+                                            <?= mb_strtoupper(mb_substr($r->getUserFullname() ?? '?', 0, 1)) ?>
+                                        </div>
+                                        <div>
+                                            <strong class="d-block" style="font-size:14px;">
+                                                <?= htmlspecialchars($r->getUserFullname() ?? 'Khách hàng') ?>
+                                            </strong>
+                                            <div>
+                                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                    <i class="fa fa-star <?= $i <= $r->getRating() ? 'text-warning' : 'text-muted' ?>"
+                                                       style="font-size:11px;"></i>
+                                                <?php endfor; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fa fa-clock me-1"></i>
+                                        <?= $r->getFormattedDate() ?>
+                                    </small>
+                                </div>
+                                <?php if ($r->getComment()): ?>
+                                    <p class="mb-0 text-muted small mt-2 ps-1">
+                                        <?= nl2br(htmlspecialchars($r->getComment())) ?>
+                                    </p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
 
-        <?php if ($canReview['can']): ?>
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <form action="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= $product->getSlug() ?>" method="POST">
-                        <input type="hidden" name="submit_review" value="1">
-                        <input type="hidden" name="product_id" value="<?= $product->getId() ?>">
-                        <input type="hidden" name="slug" value="<?= $product->getSlug() ?>">
+            <!-- Cột phải: Form gửi đánh giá -->
+            <div class="col-lg-5 mt-4 mt-lg-0">
+                <div class="card border-0 shadow-sm p-4">
+                    <h5 class="mb-3">
+                        <i class="fa fa-pen me-1 text-success"></i> Gửi đánh giá của bạn
+                    </h5>
 
-                        <div class="mb-3">
-                            <label class="form-label">Chấm điểm của bạn:</label>
-                            <div class="rating-stars">
-                                <input type="radio" name="rating" id="rs5" value="5" required><label for="rs5">★</label>
-                                <input type="radio" name="rating" id="rs4" value="4"><label for="rs4">★</label>
-                                <input type="radio" name="rating" id="rs3" value="3"><label for="rs3">★</label>
-                                <input type="radio" name="rating" id="rs2" value="2"><label for="rs2">★</label>
-                                <input type="radio" name="rating" id="rs1" value="1"><label for="rs1">★</label>
+                    <?php if (!$isLoggedIn): ?>
+                        <!-- Chưa đăng nhập -->
+                        <div class="text-center py-4">
+                            <i class="fa fa-lock fa-2x text-muted mb-2 d-block"></i>
+                            <p class="text-muted">Vui lòng đăng nhập để đánh giá sản phẩm.</p>
+                            <a href="<?= BASE_URL ?>index.php?page=login"
+                               class="btn btn-success px-4">
+                                <i class="fa fa-sign-in-alt me-1"></i> Đăng nhập
+                            </a>
+                        </div>
+
+                    <?php elseif (!$canReview['can']): ?>
+                        <!-- Đã đăng nhập nhưng không đủ điều kiện -->
+                        <div class="alert alert-warning d-flex gap-2 align-items-start">
+                            <i class="fa fa-exclamation-triangle mt-1"></i>
+                            <div>
+                                <strong>Không thể đánh giá</strong><br>
+                                <small><?= htmlspecialchars($canReview['reason']) ?></small>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="comment" class="form-label">Bình luận của bạn:</label>
-                            <textarea name="comment" id="comment" class="form-control" rows="4" placeholder="Sản phẩm rất tuyệt vời..."></textarea>
-                        </div>
+                    <?php else: ?>
+                        <!-- Form đánh giá -->
+                        <form action="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= htmlspecialchars($product->getSlug()) ?>"
+                              method="POST">
+                            <input type="hidden" name="submit_review" value="1">
+                            <input type="hidden" name="product_id"   value="<?= $product->getId() ?>">
+                            <input type="hidden" name="slug"         value="<?= htmlspecialchars($product->getSlug()) ?>">
+                            <input type="hidden" name="rating"       id="ratingInput" value="0">
 
-                        <button type="submit" class="btn btn-success">Gửi đánh giá</button>
-                    </form>
+                            <!-- Chọn sao -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Đánh giá <span class="text-danger">*</span></label>
+                                <div class="star-rating d-flex gap-1" id="starRating">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <i class="fa fa-star text-muted"
+                                           style="font-size:28px;cursor:pointer;transition:color .15s;"
+                                           data-star="<?= $i ?>"
+                                           onmouseover="hoverStar(<?= $i ?>)"
+                                           onmouseout="resetStar()"
+                                           onclick="selectStar(<?= $i ?>)"></i>
+                                    <?php endfor; ?>
+                                </div>
+                                <small class="text-muted" id="starLabel">Chọn số sao</small>
+                            </div>
+
+                            <!-- Nhận xét -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" for="reviewComment">
+                                    Nhận xét
+                                </label>
+                                <textarea class="form-control"
+                                          id="reviewComment"
+                                          name="comment"
+                                          rows="4"
+                                          placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."></textarea>
+                            </div>
+
+                            <button type="submit"
+                                    class="btn btn-success w-100"
+                                    id="submitReviewBtn"
+                                    disabled>
+                                <i class="fa fa-paper-plane me-1"></i> Gửi đánh giá
+                            </button>
+                        </form>
+
+                        <!-- Script star rating -->
+                        <script>
+                        let selectedStar = 0;
+                        const starLabels = ['', 'Rất tệ', 'Tệ', 'Bình thường', 'Tốt', 'Xuất sắc'];
+
+                        function hoverStar(n) {
+                            document.querySelectorAll('#starRating .fa-star').forEach((s, i) => {
+                                s.classList.toggle('text-warning', i < n);
+                                s.classList.toggle('text-muted',   i >= n);
+                            });
+                        }
+
+                        function resetStar() {
+                            hoverStar(selectedStar);
+                        }
+
+                        function selectStar(n) {
+                            selectedStar = n;
+                            document.getElementById('ratingInput').value = n;
+                            document.getElementById('starLabel').textContent = starLabels[n];
+                            document.getElementById('submitReviewBtn').disabled = (n === 0);
+                            hoverStar(n);
+                        }
+                        </script>
+                    <?php endif; ?>
                 </div>
             </div>
-        <?php else: ?>
-            <div class="alert alert-warning">
-                <i class="fa fa-info-circle me-2"></i>
-                <?= htmlspecialchars($canReview['reason']) ?>
-                <?php if (!isset($_SESSION['user'])): ?>
-                    <a href="<?= BASE_URL ?>index.php?page=login" class="alert-link">Đăng nhập ngay</a>.
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
+
+        </div>
     </div>
 </section>
 

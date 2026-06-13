@@ -433,4 +433,42 @@ class AdminModel {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$id]);
     }
+    // quản lý email - dành cho user xem 
+    /**
+    * lấy tất cả email admin đã gửi cho user
+    * recipient_type: 'all' | 'gold' | 'diamond' | 'silver' | username cụ thể
+    */
+    public function getEmailsForUser(string $username, string $membership): array {
+        $sql = "SELECT e.*, a.fullname AS admin_name
+                FROM   emails e
+                JOIN   admins a ON e.sent_by = a.id
+                WHERE  e.recipient_type = 'all'
+                    OR  e.recipient_type = ?
+                    OR  e.recipient_type = ?
+                ORDER  BY e.sent_at DESC";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([strtolower($membership), $username]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+    /**
+    * đếm số email chưa đọc (dùng cho badge thông báo)
+    * dùng localStorage ở client để track đã đọc
+    */
+    public function countEmailsForUser(string $username, string $membership): int {
+        $sql = "SELECT COUNT(*) FROM emails
+            WHERE  recipient_type = 'all'
+               OR  recipient_type = ?
+               OR  recipient_type = ?";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([strtolower($membership), $username]);
+            return (int)$stmt->fetchColumn();
+        } catch (Exception $e) {
+        return 0;
+        }
+    }
 }

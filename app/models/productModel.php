@@ -254,16 +254,15 @@ class ProductModel {
             return ['can' => false, 'reason' => 'Bạn đã đánh giá sản phẩm này.'];
         }
 
-        // 2. Check if user has purchased this product (and order is completed/delivered)
-        // The schema uses 'delivered', but the app code uses 'completed'. We'll check for 'delivered'.
+        // 2. Kiểm tra xem user đã mua sản phẩm này chưa (không cần chờ giao hàng)
         $sqlCheckPurchased = "SELECT COUNT(*) 
                               FROM orders o 
                               JOIN order_items oi ON o.id = oi.order_id 
-                              WHERE o.user_id = ? AND oi.product_id = ? AND o.status = 'delivered'";
+                              WHERE o.user_id = ? AND oi.product_id = ?";
         $stmt = $this->db->prepare($sqlCheckPurchased);
         $stmt->execute([$userId, $productId]);
         if ($stmt->fetchColumn() == 0) {
-            return ['can' => false, 'reason' => 'Bạn cần mua và nhận hàng thành công để đánh giá sản phẩm này.'];
+            return ['can' => false, 'reason' => 'Bạn cần mua sản phẩm này để có thể đánh giá.'];
         }
 
         return ['can' => true, 'reason' => ''];
@@ -288,5 +287,21 @@ class ProductModel {
                 WHERE p.id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$productId]);
+    }
+
+    //lấy tất cả đánh giá của 1 user
+    public function getReviewsByUser(int $userId): array {
+        $sql = "SELECT r.*, p.name AS product_name, p.slug AS product_slug,
+                       p.image AS product_image
+                FROM   reviews r
+                JOIN   products p ON r.product_id = p.id
+                WHERE  r.user_id = ?
+                ORDER  BY r.created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // trả về mảng thô (có thêm product_name, product_slug) thay vì Review entity
+        // vì cần JOIN data từ products
+        return $rows;
     }
 }

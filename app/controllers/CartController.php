@@ -214,15 +214,27 @@ class CartController extends Controller {
             // Gọi model để tạo đơn hàng, truyền vào ID của người dùng và thông tin voucher
             $orderId = $orderModel->createOrder($currentUser['id'], $_SESSION['cart'], $voucherInfo);
             
+            // Lấy thông tin sản phẩm đầu tiên trong giỏ để chuyển hướng qua trang đánh giá
+            $firstItem = reset($_SESSION['cart']);
+            $productModel = $this->model('ProductModel');
+            $product = $productModel->getById((int)$firstItem['id']);
+            $redirectSlug = $product ? $product->getSlug() : null;
+
             // Xóa giỏ hàng sau khi thanh toán thành công
             unset($_SESSION['cart']);
             unset($_SESSION['voucher']); // Xóa cả voucher đã áp dụng
             
-            // Lưu thông báo thành công để hiển thị ở trang profile
-            $_SESSION['profile_success'] = "Đặt hàng thành công! Mã đơn hàng của bạn là #" . $orderId;
-
-            // Chuyển hướng đến trang lịch sử đơn hàng (profile) để người dùng xem trạng thái
-            header("Location: " . BASE_URL . "index.php?page=profile");
+            // Chuyển hướng thẳng qua trang chi tiết sản phẩm (cuộn xuống phần đánh giá)
+            if ($redirectSlug) {
+                $_SESSION['review_message'] = [
+                    'type' => 'success', 
+                    'text' => "Thanh toán thành công (Mã đơn #$orderId)! Mời bạn để lại đánh giá cho sản phẩm."
+                ];
+                header("Location: " . BASE_URL . "index.php?page=shop-single&slug=" . $redirectSlug . "#reviews");
+            } else {
+                $_SESSION['profile_success'] = "Đặt hàng thành công! Mã đơn hàng của bạn là #" . $orderId;
+                header("Location: " . BASE_URL . "index.php?page=profile#orders");
+            }
             exit();
 
         } catch (Exception $e) {

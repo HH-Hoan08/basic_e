@@ -80,6 +80,21 @@ class ProfileController extends Controller {
             return $this->viewOrder($userInfo['id']);
         }
 
+        // lấy email admin gửi cho user
+        $emailModel = $this->model('AdminModel');
+        $userEmails = [];
+        if ($userInfo) {
+            $membership = $userInfo['membership'] ?? 'silver';
+            $userEmails = $emailModel->getEmailsForUser($userInfo['username'], $membership);
+        }
+
+        // Lấy đánh giá của user
+        $productModel = $this->model('ProductModel');
+        $userReviews  = [];
+        if ($userInfo && isset($userInfo['id'])) {
+            $userReviews = $productModel->getReviewsByUser($userInfo['id']);
+        }
+
         $this->view('profile', [
             'pageTitle' => 'Basic Shop - Tài khoản của tôi',
             'page' => 'profile',
@@ -87,6 +102,8 @@ class ProfileController extends Controller {
             'success' => $success,
             'currentUserInfo' => $userInfo,
             'userOrders' => $orders,
+            'userEmails' => $userEmails,
+            'userReviews' => $userReviews,
         ]);
     }
 

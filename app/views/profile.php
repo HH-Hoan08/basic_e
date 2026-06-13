@@ -30,10 +30,38 @@ if (!$isLoggedIn) {
         <!-- Nav tabs: Chuyển đổi qua lại giữa Hồ sơ và Giỏ hàng -->
         <ul class="nav nav-tabs mb-4 border-success" id="profileTab" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active text-success fw-bold" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab" aria-controls="info" aria-selected="true">Thông tin cá nhân</button>
+                <button class="nav-link active text-success fw-bold" id="info-tab"
+                        data-bs-toggle="tab" data-bs-target="#info"
+                        type="button" role="tab" aria-selected="true">
+                    <i class="fa fa-user me-1"></i> Thông tin cá nhân
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link text-success fw-bold" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab" aria-controls="orders" aria-selected="false">Quản lý Đơn hàng</button>
+                <button class="nav-link text-success fw-bold" id="orders-tab"
+                        data-bs-toggle="tab" data-bs-target="#orders"
+                        type="button" role="tab" aria-selected="false">
+                    <i class="fa fa-box me-1"></i> Quản lý Đơn hàng
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-success fw-bold" id="reviews-tab"
+                        data-bs-toggle="tab" data-bs-target="#reviews"
+                        type="button" role="tab" aria-selected="false">
+                    <i class="fa fa-star me-1"></i> Đánh giá của tôi
+                    <?php if (!empty($userReviews)): ?>
+                        <span class="badge bg-success ms-1"><?= count($userReviews) ?></span>
+                    <?php endif; ?>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-success fw-bold" id="emails-tab"
+                        data-bs-toggle="tab" data-bs-target="#emails"
+                        type="button" role="tab" aria-selected="false">
+                    <i class="fa fa-envelope me-1"></i> Email từ Admin
+                    <?php if (!empty($userEmails)): ?>
+                        <span class="badge bg-danger ms-1" id="email-badge"><?= count($userEmails) ?></span>
+                    <?php endif; ?>
+                </button>
             </li>
         </ul>
 
@@ -192,6 +220,237 @@ if (!$isLoggedIn) {
                     </div>
                                 </div>
             </div>
+            <!-- TAB 3: ĐÁNH GIÁ CỦA TÔI -->
+            <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                <h5 class="mb-4">Đánh giá của tôi</h5>
+
+                <?php if (empty($userReviews)): ?>
+                    <div class="text-center py-5 text-muted">
+                        <i class="fa fa-star fa-3x mb-3 d-block"></i>
+                        <p>Bạn chưa có đánh giá nào.</p>
+                        <a href="<?= BASE_URL ?>index.php?page=shop" class="btn btn-success">
+                            Mua sắm ngay
+                        </a>
+                    </div>
+                <?php else: ?>
+                    <div class="row g-3">
+                        <?php foreach ($userReviews as $rv): ?>
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+
+                                            <!-- Ảnh sản phẩm -->
+                                            <div class="col-auto">
+                                                <img src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($rv['product_image'] ?? 'no-image.jpg') ?>"
+                                                     style="width:70px;height:70px;object-fit:cover;border-radius:8px;"
+                                                     alt="<?= htmlspecialchars($rv['product_name']) ?>"
+                                                     onerror="this.src='<?= BASE_URL ?>assets/img/no-image.jpg'">
+                                            </div>
+
+                                            <!-- Thông tin đánh giá -->
+                                            <div class="col">
+                                                <a href="<?= BASE_URL ?>index.php?page=shop-single&slug=<?= htmlspecialchars($rv['product_slug']) ?>"
+                                                   class="fw-bold text-dark text-decoration-none">
+                                                    <?= htmlspecialchars($rv['product_name']) ?>
+                                                </a>
+
+                                                <!-- Sao đánh giá -->
+                                                <div class="my-1">
+                                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                        <i class="fa fa-star <?= $i <= (int)$rv['rating'] ? 'text-warning' : 'text-muted' ?>"
+                                                           style="font-size:13px;"></i>
+                                                    <?php endfor; ?>
+                                                    <small class="text-muted ms-1"><?= (int)$rv['rating'] ?>/5</small>
+                                                </div>
+
+                                                <!-- Nội dung bình luận -->
+                                                <p class="mb-1 text-muted small">
+                                                    <?= !empty($rv['comment'])
+                                                        ? htmlspecialchars($rv['comment'])
+                                                        : '<em>Không có nhận xét</em>' ?>
+                                                </p>
+
+                                                <small class="text-muted">
+                                                    <i class="fa fa-clock me-1"></i>
+                                                    <?= date('d/m/Y H:i', strtotime($rv['created_at'])) ?>
+                                                </small>
+                                            </div>
+
+                                            <!-- Trạng thái hiển thị -->
+                                            <div class="col-auto text-end">
+                                                <?php if ($rv['is_visible']): ?>
+                                                    <span class="badge bg-success">
+                                                        <i class="fa fa-eye me-1"></i> Đang hiển thị
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary">
+                                                        <i class="fa fa-eye-slash me-1"></i> Đã ẩn
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <!-- TAB 4: EMAILS TỪ ADMIN -->
+            <div class="tab-pane fade" id="emails" role="tabpanel" aria-labelledby="emails-tab">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">Email từ Admin</h5>
+                    <?php if (!empty($userEmails)): ?>
+                        <small class="text-muted"><?= count($userEmails) ?> email</small>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (empty($userEmails)): ?>
+                    <div class="text-center py-5 text-muted">
+                        <i class="fa fa-envelope-open fa-3x mb-3 d-block"></i>
+                        <p>Chưa có email nào từ Admin.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="accordion" id="emailAccordion">
+                        <?php foreach ($userEmails as $idx => $em): ?>
+                            <div class="accordion-item border-0 mb-2 shadow-sm rounded-3 overflow-hidden"
+                                 id="email-item-<?= $em['id'] ?>">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button <?= $idx > 0 ? 'collapsed' : '' ?> fw-normal"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#email-body-<?= $em['id'] ?>"
+                                            onclick="markAsRead(<?= $em['id'] ?>)">
+
+                                        <div class="d-flex align-items-center gap-3 w-100">
+                                            <!-- Dot chưa đọc -->
+                                            <span class="unread-dot rounded-circle bg-primary flex-shrink-0"
+                                                  id="dot-<?= $em['id'] ?>"
+                                                  style="width:8px;height:8px;display:inline-block;"></span>
+
+                                            <!-- Chủ đề -->
+                                            <span class="fw-bold flex-grow-1" id="subject-<?= $em['id'] ?>">
+                                                <?= htmlspecialchars($em['subject']) ?>
+                                            </span>
+
+                                            <!-- Tag loại người nhận -->
+                                            <span class="badge <?= $em['recipient_type'] === 'all' ? 'bg-primary' : 'bg-warning text-dark' ?> me-2 flex-shrink-0">
+                                                <?php
+                                                $typeLabel = match($em['recipient_type']) {
+                                                    'all'     => 'Tất cả',
+                                                    'gold'    => 'Gold',
+                                                    'diamond' => 'Diamond',
+                                                    'silver'  => 'Silver',
+                                                    default   => $em['recipient_type'],
+                                                };
+                                                echo $typeLabel;
+                                                ?>
+                                            </span>
+
+                                            <!-- Ngày gửi -->
+                                            <small class="text-muted flex-shrink-0">
+                                                <i class="fa fa-clock me-1"></i>
+                                                    <?= date('d/m/Y H:i', strtotime($em['sent_at'])) ?>
+                                            </small>
+                                        </div>
+                                    </button>
+                                </h2>
+
+                                <div id="email-body-<?= $em['id'] ?>"
+                                    class="accordion-collapse collapse <?= $idx === 0 ? 'show' : '' ?>"
+                                    data-bs-parent="#emailAccordion">
+                                    <div class="accordion-body bg-white">
+
+                                        <!-- Header email -->
+                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                            <div>
+                                                <small class="text-muted d-block">
+                                                    <i class="fa fa-user-shield me-1 text-success"></i>
+                                                    <strong>Từ:</strong> <?= htmlspecialchars($em['admin_name'] ?? 'Admin') ?>
+                                                </small>
+                                                <small class="text-muted d-block">
+                                                    <i class="fa fa-users me-1 text-success"></i>
+                                                    <strong>Gửi đến:</strong>
+                                                    <?= $typeLabel ?>
+                                                </small>
+                                            </div>
+                                            <small class="text-muted">
+                                                <?= date('H:i — d/m/Y', strtotime($em['sent_at'])) ?>
+                                            </small>
+                                        </div>
+
+                                        <!-- Nội dung email -->
+                                        <div class="email-body" style="line-height:1.75;white-space:pre-wrap;">
+                                            <?= nl2br(htmlspecialchars($em['body'])) ?>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Script xử lý email đã đọc (lưu localStorage) -->
+            <script>
+            // Danh sách ID email đã đọc (lưu local)
+            const READ_KEY = 'zay_read_emails';
+
+            function getReadEmails() {
+                return JSON.parse(localStorage.getItem(READ_KEY) || '[]');
+            }
+
+            function markAsRead(id) {
+                const read = getReadEmails();
+                if (!read.includes(id)) {
+                    read.push(id);
+                    localStorage.setItem(READ_KEY, JSON.stringify(read));
+                }
+                // Ẩn dot chưa đọc
+                const dot = document.getElementById('dot-' + id);
+                if (dot) dot.style.display = 'none';
+                // Bỏ bold chủ đề
+                const subj = document.getElementById('subject-' + id);
+                if (subj) subj.classList.remove('fw-bold');
+                // Cập nhật badge
+                updateBadge();
+            }
+
+            function updateBadge() {
+                const read  = getReadEmails();
+                const dots  = document.querySelectorAll('.unread-dot');
+                let unread  = 0;
+                dots.forEach(d => { if (d.style.display !== 'none') unread++; });
+                const badge = document.getElementById('email-badge');
+                if (badge) {
+                    if (unread > 0) {
+                        badge.textContent = unread;
+                        badge.style.display = '';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+
+            // Khi load trang: áp dụng trạng thái đã đọc từ localStorage
+            document.addEventListener('DOMContentLoaded', function () {
+                const read = getReadEmails();
+                read.forEach(id => {
+                    const dot  = document.getElementById('dot-'     + id);
+                    const subj = document.getElementById('subject-' + id);
+                    if (dot)  dot.style.display  = 'none';
+                    if (subj) subj.classList.remove('fw-bold');
+                });
+                // Email đầu tiên auto mở → đánh dấu đã đọc
+                <?php if (!empty($userEmails)): ?>
+                markAsRead(<?= (int)$userEmails[0]['id'] ?>);
+                <?php endif; ?>
+                updateBadge();
+            });
+            </script>
         </div>
     </div>
 </section>
@@ -235,4 +494,16 @@ if (!$isLoggedIn) {
         btnSendCode.disabled = true;
         emailHint.innerHTML = "Đã mô phỏng gửi mail. (Nhập mã 123456 để vượt qua logic)";
     }
+
+    // Tự động mở tab dựa trên URL hash (ví dụ: #orders)
+    document.addEventListener("DOMContentLoaded", function() {
+        let hash = window.location.hash;
+        if (hash) {
+            let targetTab = document.querySelector('button[data-bs-target="' + hash + '"]');
+            if (targetTab) {
+                let tab = new bootstrap.Tab(targetTab);
+                tab.show();
+            }
+        }
+    });
 </script>

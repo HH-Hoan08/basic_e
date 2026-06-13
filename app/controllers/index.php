@@ -110,7 +110,9 @@ if (strpos($page, 'admin') === false) {
 
 switch ($page) {
     case 'shop':
-        include '../views/shop.php';
+        include_once './ShopController.php';
+        $shopController = new ShopController();
+        $shopController->index();
         break;
     case 'contact':
         include '../views/contact.php';
@@ -119,7 +121,9 @@ switch ($page) {
         include '../views/about.php';
         break;
     case 'shop-single':
-        include '../views/shop-single.php';
+        include_once './ShopController.php';
+        $shopController = new ShopController();
+        $shopController->single();
         break;
     case 'login':
     case 'register':
