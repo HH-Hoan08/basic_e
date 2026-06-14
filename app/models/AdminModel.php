@@ -366,9 +366,9 @@ class AdminModel {
     // ==========================================
 
     public function getAllVouchers(): array {
-        $sql = "SELECT v.*, a.fullname as creator_name 
+        $sql = "SELECT v.*, u.fullname as creator_name 
                 FROM vouchers v 
-                LEFT JOIN admins a ON v.created_by = a.id 
+                LEFT JOIN users u ON v.created_by = u.id 
                 ORDER BY v.id DESC";
         try {
             return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -401,7 +401,16 @@ class AdminModel {
         $sql = "INSERT INTO vouchers (code, type, value, quantity, expires_at, is_active, created_by) 
                 VALUES (:code, :type, :value, :quantity, :expires_at, :is_active, :created_by)";
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute($data);
+
+        $stmt->bindValue(':code', $data['code']);
+        $stmt->bindValue(':type', $data['type']);
+        $stmt->bindValue(':value', $data['value']);
+        $stmt->bindValue(':quantity', $data['quantity'], PDO::PARAM_INT);
+        $stmt->bindValue(':expires_at', $data['expires_at']);
+        $stmt->bindValue(':is_active', $data['is_active'], PDO::PARAM_INT);
+        $stmt->bindValue(':created_by', $data['created_by'], PDO::PARAM_INT);
+
+        return $stmt->execute();
     }
 
     public function updateVoucher(int $id, array $data): bool {
@@ -439,9 +448,9 @@ class AdminModel {
     * recipient_type: 'all' | 'gold' | 'diamond' | 'silver' | username cụ thể
     */
     public function getEmailsForUser(string $username, string $membership): array {
-        $sql = "SELECT e.*, a.fullname AS admin_name
+        $sql = "SELECT e.*, u.fullname AS admin_name
                 FROM   emails e
-                JOIN   admins a ON e.sent_by = a.id
+                JOIN   users u ON e.sent_by = u.id
                 WHERE  e.recipient_type = 'all'
                     OR  e.recipient_type = ?
                     OR  e.recipient_type = ?

@@ -57,6 +57,9 @@ class AdminController extends Controller {
             case 'edit_voucher':
                 $this->voucherForm();
                 break;
+            case 'send_password_reset':
+                $this->sendPasswordReset();
+                break;
             // Các route khác như products, employees, vouchers... bạn sẽ thêm vào đây
             default:
                 $this->dashboard();
@@ -162,15 +165,26 @@ class AdminController extends Controller {
             $isLocked = (int)$_POST['is_locked'];
             $this->adminModel->toggleUserLock($userId, $isLocked);
             
+            $actionText = $isLocked ? 'khóa' : 'mở khóa';
+            $_SESSION['admin_message'] = ['type' => 'success', 'text' => "Đã {$actionText} tài khoản người dùng #{$userId}."];
+
             header("Location: " . BASE_URL . "index.php?page=admin&action=customers");
             exit();
+        }
+
+        $message = null;
+        if (isset($_SESSION['admin_message'])) {
+            $message = $_SESSION['admin_message'];
+            unset($_SESSION['admin_message']);
         }
 
         // Lấy danh sách khách hàng kèm phân hạng (Silver, Gold, Diamond) dựa trên tổng tiền đã mua
         $customers = $this->adminModel->getCustomersWithTiers();
 
-        // $viewPath = __DIR__ . '/../views/admin/customers.php';
-        // include __DIR__ . '/../views/admin/layout.php';
+        $this->renderAdminView('customers', [
+            'customers' => $customers,
+            'message' => $message
+        ]);
     }
 
     // ==========================================
@@ -366,6 +380,43 @@ class AdminController extends Controller {
             $_SESSION['admin_message'] = $this->adminModel->deleteProduct($productId) ? ['type' => 'success', 'text' => 'Đã xóa sản phẩm thành công.'] : ['type' => 'danger', 'text' => 'Xóa sản phẩm thất bại.'];
         }
         header("Location: " . BASE_URL . "index.php?page=admin&action=products");
+        exit();
+    }
+
+    // ==========================================
+    // 7. GỬI EMAIL ĐẶT LẠI MẬT KHẨU (ADMIN)
+    // ==========================================
+    private function sendPasswordReset() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: " . BASE_URL . "index.php?page=admin&action=customers");
+            exit();
+        }
+
+        $userId = (int)($_POST['user_id'] ?? 0);
+        $userAuthModel = $this->model('UserAuth');
+        $user = $userAuthModel->getUserById($userId);
+
+        if (!$user) {
+            $_SESSION['admin_message'] = ['type' => 'danger', 'text' => 'Không tìm thấy người dùng với ID ' . $userId];
+        } else {
+            $email = $user['email'];
+            $token = substr(str_shuffle("0123456789"), 0, 6); // Tạo OTP 6 số
+            $userAuthModel->createPasswordResetToken($email, $token);
+            
+            // Nạp MailService
+            include_once __DIR__ . '/../services/MailService.php';
+            $mailService = new MailService();
+            $sent = $mailService->sendPasswordResetEmail($email, $token);
+
+            if ($sent) {
+                $_SESSION['admin_message'] = ['type' => 'success', 'text' => "Đã gửi email đặt lại mật khẩu thành công cho {$email}."];
+            } else {
+                $_SESSION['admin_message'] = ['type' => 'danger', 'text' => "Gửi email thất bại cho {$email}. Vui lòng kiểm tra cấu hình email và file log."];
+                error_log("Admin failed to send password reset email to: " . $email);
+            }
+        }
+
+        header("Location: " . BASE_URL . "index.php?page=admin&action=customers");
         exit();
     }
 

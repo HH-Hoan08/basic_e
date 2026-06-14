@@ -19,6 +19,13 @@
             return !empty($result) ? $result[0] : null;
         }
 
+        // Lấy thông tin user bằng ID
+        public function getUserById(int $id){
+            $sql = 'SELECT * FROM users WHERE id = ?'; 
+            $result = $this->read_item($sql, [$id]);
+            return !empty($result) ? $result[0] : null;
+        }
+
         // Cập nhật thông tin cá nhân (fullname, email, address)
         public function updateProfile($username, $fullname, $email, $address = ''){
             $sql = 'UPDATE users SET fullname = ?, email = ?, address = ? WHERE username = ?';
