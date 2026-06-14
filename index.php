@@ -11,7 +11,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Định nghĩa các hằng số đường dẫn để sử dụng trong toàn bộ ứng dụng
-define('ROOT_PATH', __DIR__);
+define('ROOT_PATH', __DIR__); 
 define('BASE_URL', 'http://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/basic_e/');
 
 // Tải các file core của hệ thống

@@ -21,7 +21,7 @@ class MailService {
         $this->mailer->Host       = 'smtp.gmail.com'; // VD: smtp.gmail.com
         $this->mailer->SMTPAuth   = true;
         $this->mailer->Username   = 'basicadmin4@gmail.com'; // Email của bạn
-        $this->mailer->Password   = 'bgzc spxd tcjq qwom';     // Mật khẩu ứng dụng Gmail
+        $this->mailer->Password   = 'bgzc spxd tcjq qwom';                                                                                                                                                                                                                                                            // Mật khẩu ứng dụng Gmail
         $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $this->mailer->Port       = 465;
         $this->mailer->CharSet    = 'UTF-8';
