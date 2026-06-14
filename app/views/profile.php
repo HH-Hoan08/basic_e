@@ -40,7 +40,7 @@ if (!$isLoggedIn) {
                 <button class="nav-link text-success fw-bold" id="orders-tab"
                         data-bs-toggle="tab" data-bs-target="#orders"
                         type="button" role="tab" aria-selected="false">
-                    <i class="fa fa-box me-1"></i> Quản lý Đơn hàng
+                    <i class="fa fa-box me-1"></i> Đơn hàng của tôi
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -113,6 +113,11 @@ if (!$isLoggedIn) {
                                             <button type="button" class="btn btn-outline-success" id="btn_send_code" onclick="showVerificationCode()">Gửi mã</button>
                                         </div>
                                         <small class="text-muted" id="email_hint">Nếu đổi email, bạn cần xác nhận mã gửi về email mới.</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Địa chỉ</label>
+                                        <input type="text" class="form-control" name="address" value="<?= htmlspecialchars($currentUserInfo['address'] ?? '') ?>" placeholder="Nhập địa chỉ liên hệ của bạn...">
                                     </div>
                                     
                                     <div class="mb-3 d-none" id="verification_block">

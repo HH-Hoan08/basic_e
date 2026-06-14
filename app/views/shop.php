@@ -220,19 +220,43 @@
 
                 <!-- Phân trang -->
                 <?php if ($totalPages > 1): ?>
-                <nav class="mt-5 d-flex justify-content-center">
-                    <ul class="pagination">
-                        <?php for ($i = 1; $i <= $totalPages; $i++):
-                            $url = BASE_URL.'index.php?page=shop&gender='.$filter['gender']
-                                  .'&sort='.$filter['sort'].'&pg='.$i;
+                <div class="row mt-5">
+                    <ul class="pagination pagination-lg justify-content-end">
+                        <?php
+                        // Lấy trang hiện tại
+                        $currentPage = (int)($filter['page'] ?? 1);
+                        
+                        // Hàm hỗ trợ tạo URL để giữ lại các bộ lọc hiện hành (như category_id, sort, keyword, ...)
+                        $buildUrl = function($pageNum) {
+                            $params = $_GET;
+                            $params['p'] = $pageNum;
+                            return BASE_URL . 'index.php?' . http_build_query($params);
+                        };
                         ?>
-                            <li class="page-item <?= $filter['page']==$i?'active':'' ?>">
-                                <a class="page-link <?= $filter['page']==$i?'bg-success border-success':'' ?>"
-                                   href="<?= $url ?>"><?= $i ?></a>
+                        
+                        <!-- Nút Trang trước -->
+                        <?php if ($currentPage > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link rounded-0 mr-3 shadow-sm border-top-0 border-left-0 text-dark" href="<?= $buildUrl($currentPage - 1) ?>">Trang trước</a>
+                            </li>
+                        <?php endif; ?>
+
+                        <!-- Các nút số trang -->
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <li class="page-item">
+                                <a class="page-link <?= ($i === $currentPage) ? 'active text-white bg-success border-success' : 'text-dark' ?> rounded-0 mr-3 shadow-sm border-top-0 border-left-0" 
+                                   href="<?= $buildUrl($i) ?>"><?= $i ?></a>
                             </li>
                         <?php endfor; ?>
+
+                        <!-- Nút Trang sau -->
+                        <?php if ($currentPage < $totalPages): ?>
+                            <li class="page-item">
+                                <a class="page-link rounded-0 shadow-sm border-top-0 border-left-0 text-dark" href="<?= $buildUrl($currentPage + 1) ?>">Trang sau</a>
+                            </li>
+                        <?php endif; ?>
                     </ul>
-                </nav>
+                </div>
                 <?php endif; ?>
 
             <?php endif; ?>

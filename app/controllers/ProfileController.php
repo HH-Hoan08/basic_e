@@ -38,13 +38,14 @@ class ProfileController extends Controller {
             if (isset($_POST['btn_update_info'])) {
                 $fullname = trim($_POST['fullname']);
                 $newEmail = trim($_POST['email']);
+                $address  = trim($_POST['address'] ?? '');
                 $verifyCode = trim($_POST['verify_code'] ?? '');
                 $currentUserInfo = $userModel->getUserByUsername($username);
 
                 if ($newEmail !== $currentUserInfo['email'] && $verifyCode !== '123456') {
                     $error = "Mã xác nhận Email không chính xác! (Mã thử nghiệm: 123456)";
                 } else {
-                    $userModel->updateProfile($username, $fullname, $newEmail);
+                    $userModel->updateProfile($username, $fullname, $newEmail, $address);
                     $success = "Cập nhật thông tin cá nhân thành công!";
                 }
             }

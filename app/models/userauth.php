@@ -19,10 +19,10 @@
             return !empty($result) ? $result[0] : null;
         }
 
-        // Cập nhật thông tin cá nhân (fullname, email)
-        public function updateProfile($username, $fullname, $email){
-            $sql = 'UPDATE users SET fullname = ?, email = ? WHERE username = ?';
-            return $this->execute_item($sql, [$fullname, $email, $username]);
+        // Cập nhật thông tin cá nhân (fullname, email, address)
+        public function updateProfile($username, $fullname, $email, $address = ''){
+            $sql = 'UPDATE users SET fullname = ?, email = ?, address = ? WHERE username = ?';
+            return $this->execute_item($sql, [$fullname, $email, $address, $username]);
         }
 
         // Cập nhật ảnh đại diện
