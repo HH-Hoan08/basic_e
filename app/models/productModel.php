@@ -22,30 +22,27 @@ class ProductModel {
     public function getProducts(array $filter = []): array {
         $where  = ['p.is_active = 1'];
         $params = [];
-        $types  = '';
 
         if (!empty($filter['gender']) && $filter['gender'] !== 'all') {
             $where[]  = 'p.gender = ?';
             $params[] = $filter['gender'];
-            $types   .= 's';
         }
         if (!empty($filter['brand_id'])) {
             $where[]  = 'p.brand_id = ?';
             $params[] = (int)$filter['brand_id'];
-            $types   .= 'i';
         }
         if (!empty($filter['category_id'])) {
             $where[]  = 'p.category_id = ?';
             $params[] = (int)$filter['category_id'];
-            $types   .= 'i';
         }
         if (!empty($filter['on_sale']))   $where[] = 'p.sale_price IS NOT NULL';
-        if (!empty($filter['q'])) {
-            $where[]  = '(p.name LIKE ? OR p.brand LIKE ?)';
+        if (!empty($filter['q'])) { // Mở rộng tìm kiếm để kết quả phù hợp hơn
+            $where[]  = '(p.name LIKE ? OR p.brand LIKE ? OR p.description LIKE ? OR c.name LIKE ?)';
             $kw       = '%' . $filter['q'] . '%';
             $params[] = $kw;
             $params[] = $kw;
-            $types   .= 'ss';
+            $params[] = $kw; // for description
+            $params[] = $kw; // for category name
         }
 
         $orderMap = [
@@ -208,34 +205,34 @@ class ProductModel {
     public function countProducts(array $filter = []): int {
         $where  = ['p.is_active = 1'];
         $params = [];
-        $types  = '';
 
-        if (!empty($filter['gender']) && $filter['gender'] !== 'all') {
+        if (!empty($filter['gender']) && $filter['gender'] !== 'all') { // Giữ nguyên
             $where[]  = 'p.gender = ?';
             $params[] = $filter['gender'];
-            $types   .= 's';
         }
-        if (!empty($filter['brand_id'])) {
+        if (!empty($filter['brand_id'])) { // Giữ nguyên
             $where[]  = 'p.brand_id = ?';
             $params[] = (int)$filter['brand_id'];
-            $types   .= 'i';
         }
-        // Sửa lỗi: Thiếu bộ lọc category_id trong hàm count
-        if (!empty($filter['category_id'])) {
+        if (!empty($filter['category_id'])) { // Giữ nguyên
             $where[]  = 'p.category_id = ?';
             $params[] = (int)$filter['category_id'];
-            $types   .= 'i';
         }
-        if (!empty($filter['on_sale']))   $where[] = 'p.sale_price IS NOT NULL';
-        if (!empty($filter['q'])) {
-            $where[]  = '(p.name LIKE ? OR p.brand LIKE ?)';
+        if (!empty($filter['on_sale']))   $where[] = 'p.sale_price IS NOT NULL'; // Giữ nguyên
+        if (!empty($filter['q'])) { // Mở rộng tìm kiếm
+            $where[]  = '(p.name LIKE ? OR p.brand LIKE ? OR p.description LIKE ? OR c.name LIKE ?)';
             $kw       = '%' . $filter['q'] . '%';
             $params[] = $kw;
             $params[] = $kw;
-            $types   .= 'ss';
+            $params[] = $kw; // for description
+            $params[] = $kw; // for category name
         }
 
-        $sql  = "SELECT COUNT(*) FROM products p WHERE " . implode(' AND ', $where);
+        // Sửa lỗi: Cần JOIN với bảng categories để tìm kiếm theo tên danh mục
+        $sql  = "SELECT COUNT(p.id) 
+                 FROM products p 
+                 LEFT JOIN categories c ON p.category_id = c.id
+                 WHERE " . implode(' AND ', $where);
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return (int)$stmt->fetchColumn();

@@ -1,16 +1,4 @@
     <!-- Bắt đầu Banner -->
-    <style>
-        /* Fix triệt để cho banner bị "co giật" khi chuyển ảnh có kích thước khác nhau */
-        #template-mo-zay-hero-carousel .carousel-item .img-fluid {
-            /* Thiết lập một tỷ lệ khung hình vuông (1:1) cố định cho tất cả ảnh */
-            aspect-ratio: 1 / 1;
-            /* Đảm bảo toàn bộ ảnh nằm trọn trong khung, không bị méo hay cắt xén */
-            object-fit: contain;
-            width: 100%;
-            /* Thêm một màu nền nhẹ để phần trống (nếu có) không bị trong suốt */
-            background-color: #f8f9fa;
-        }
-    </style>
     <div id="template-mo-zay-hero-carousel" class="carousel slide" data-bs-ride="carousel">
         <ol class="carousel-indicators">
             <li data-bs-target="#template-mo-zay-hero-carousel" data-bs-slide-to="0" class="active"></li>

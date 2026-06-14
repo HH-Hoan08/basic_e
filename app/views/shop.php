@@ -1,41 +1,4 @@
 <?php $pageTitle = 'Cửa hàng — Basic Shop'; ?>
-<style>
-    .product-img-container {
-        display: block;
-        position: relative;
-        padding-top: 100%; /* 100% của chiều rộng -> tạo ra khung hình vuông 1:1 */
-        background-color: #f8f9fa; /* Màu nền giữ chỗ */
-    }
-    .product-img-container .product-img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: contain; /* Sửa lại: Hiển thị toàn bộ ảnh, không bị cắt xén */
-    }
-</style>
-
-<!-- Modal tìm kiếm -->
-<div class="modal fade bg-white" id="templatemo_search" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="w-100 pt-1 mb-5 text-right">
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form action="<?= BASE_URL ?>index.php" method="GET"
-              class="modal-content modal-body border-0 p-0">
-            <input type="hidden" name="page" value="shop">
-            <div class="input-group mb-2">
-                <input type="text" class="form-control" name="q"
-                       placeholder="Tìm kiếm sản phẩm..."
-                       value="<?= htmlspecialchars($filter['q'] ?? '') ?>">
-                <button type="submit" class="input-group-text bg-success text-light">
-                    <i class="fa fa-fw fa-search text-white"></i>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <div class="container py-5">
     <div class="row">

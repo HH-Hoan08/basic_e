@@ -15,18 +15,6 @@ foreach ($variants as $v) {
 
 <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/shop_single.css">
 
-<!--
-    CSS Fix: Đảm bảo ảnh sản phẩm (cả chính và thumbnail) hiển thị nguyên vẹn,
-    không bị phóng to hay cắt xén. Sử dụng object-fit: contain để ảnh vừa vặn
-    trong khung chứa của nó.
--->
-<style>
-    #product-detail, .thumb-img {
-        object-fit: contain; /* Hiển thị toàn bộ ảnh, không bị cắt xén */
-        background-color: #f8f9fa; /* Thêm màu nền cho phần trống (nếu có) */
-    }
-</style>
-
 <!-- Bắt đầu Nội dung -->
 <section class="bg-light">
     <div class="container pb-5">

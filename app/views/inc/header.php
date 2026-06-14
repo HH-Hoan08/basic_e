@@ -79,17 +79,21 @@
                     </ul>
                 </div>
                 <div class="navbar align-self-center d-flex">
+                    <!-- Form tìm kiếm cho di động -->
                     <div class="d-lg-none flex-sm-fill mt-3 mb-4 col-7 col-sm-auto pr-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="inputMobileSearch" placeholder="Tìm kiếm ...">
-                            <div class="input-group-text">
-                                <i class="fa fa-fw fa-search"></i>
+                        <form action="<?= BASE_URL ?>index.php" method="get">
+                            <div class="input-group">
+                                <input type="hidden" name="page" value="shop">
+                                <input type="text" class="form-control" name="q" placeholder="Tìm kiếm...">
+                                <button class="input-group-text" type="submit"><i class="fa fa-fw fa-search"></i></button>
                             </div>
-                        </div>
+                        </form>
                     </div>
-                    <a class="nav-icon d-none d-lg-inline" href="#" data-bs-toggle="modal" data-bs-target="#templatemo_search">
-                        <i class="fa fa-fw fa-search text-dark mr-2"></i>
-                    </a>
+                    <!-- Form tìm kiếm cho desktop -->
+                    <form action="<?= BASE_URL ?>index.php" method="get" class="d-none d-lg-flex align-items-center me-2">
+                        <input type="hidden" name="page" value="shop">
+                        <input class="form-control form-control-sm" type="search" name="q" placeholder="Tìm kiếm..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" aria-label="Search">
+                    </form>
 
                     <!-- Mini Cart Dropdown -->
                     <div class="dropdown d-inline-block">
@@ -167,22 +171,3 @@
         </div>
     </nav>
     <!-- Đóng Tiêu đề -->
-
-    <!-- Bắt đầu Modal -->
-    <div class="modal fade bg-white" id="templatemo_search" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="w-100 pt-1 mb-5 text-right">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="index.php" method="get" class="modal-content modal-body border-0 p-0">
-                <input type="hidden" name="page" value="shop">
-                <div class="input-group mb-2">
-                    <input type="text" class="form-control" id="inputModalSearch" name="q" placeholder="Tìm kiếm ...">
-                    <button type="submit" class="input-group-text bg-success text-light">
-                        <i class="fa fa-fw fa-search text-white"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <!-- Kết thúc Modal -->

@@ -153,4 +153,14 @@ switch ($page) {
         // Giờ đây, CartController có thể kế thừa từ lớp Controller đã được nạp ở trên
         // và sử dụng các phương thức như model() hoặc view() một cách chính xác.
         $cartController = new CartController();
-        $cartController->i
+        $cartController->index();
+        break;
+    default:
+        include '../views/home.php';
+        break;
+}
+
+if (strpos($page, 'admin') === false) {
+    include '../views/inc/footer.php';
+}
+?>
