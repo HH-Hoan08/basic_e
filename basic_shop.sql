@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jun 12, 2026 at 01:28 PM
+-- Generation Time: Jun 14, 2026 at 10:57 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -160,6 +160,15 @@ CREATE TABLE `orders` (
   `ordered_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `voucher_id`, `confirmed_by`, `total_price`, `discount_amount`, `status`, `ordered_at`) VALUES
+(5, 12, NULL, NULL, 33650000, 0, 'cancelled', '2026-06-12 18:53:05'),
+(6, 12, NULL, NULL, 12490000, 0, 'confirmed', '2026-06-12 18:53:22'),
+(7, 12, NULL, NULL, 12530000, 0, 'delivered', '2026-06-12 19:24:47');
+
 -- --------------------------------------------------------
 
 --
@@ -173,6 +182,22 @@ CREATE TABLE `order_items` (
   `quantity` int(11) NOT NULL DEFAULT 1,
   `unit_price` decimal(12,0) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `unit_price`) VALUES
+(1, 5, 1, 2, 1290000),
+(2, 5, 12, 13, 2390000),
+(3, 6, 2, 2, 1790000),
+(4, 6, 4, 1, 1890000),
+(5, 6, 6, 1, 1990000),
+(6, 6, 3, 1, 1350000),
+(7, 6, 1, 1, 1290000),
+(8, 6, 12, 1, 2390000),
+(9, 7, 2, 2, 1790000),
+(10, 7, 2, 5, 1790000);
 
 -- --------------------------------------------------------
 
@@ -207,18 +232,18 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `category_id`, `brand_id`, `created_by`, `gender`, `name`, `brand`, `slug`, `description`, `price`, `sale_price`, `stock`, `image`, `is_active`, `is_featured`, `avg_rating`, `sold_count`, `created_at`, `updated_at`) VALUES
-(1, 15, 1, 1, 'male', 'Levis 511 Slim Fit Jeans', 'Levis', 'levis-511-slim-fit', 'Quan jeans nam Levis 511 form slim fit kinh dien, chat denim co gian nhe 4 chieu.', 1590000, 1290000, 80, 'levis_511_slim.jpg', 1, 1, 4.8, 320, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
-(2, 15, 1, 1, 'male', 'Levis 501 Original Straight', 'Levis', 'levis-501-original', 'Quan jeans Levis 501 huyen thoai, dang straight co dien khong bao gio loi mot.', 1790000, NULL, 60, 'levis_501_straight.jpg', 1, 1, 4.9, 280, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
-(3, 35, 1, 1, 'female', 'Levis 721 High Rise Skinny', 'Levis', 'levis-721-skinny', 'Quan jeans nu Levis 721 lung cao, form skinny ton dang toi da.', 1690000, 1350000, 90, 'levis_721_skinny.jpg', 1, 1, 4.8, 410, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
-(4, 13, 1, 1, 'male', 'Levis Trucker Jacket Classic', 'Levis', 'levis-trucker-jacket', 'Ao jacket denim Levis Trucker kinh dien tu thap nien 60.', 2290000, 1890000, 40, 'levis_trucker_jacket.jpg', 1, 1, 4.9, 150, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
+(1, 15, 1, 1, 'male', 'Levis 511 Slim Fit Jeans', 'Levis', 'levis-511-slim-fit', 'Quan jeans nam Levis 511 form slim fit kinh dien, chat denim co gian nhe 4 chieu.', 1590000, 1290000, 79, '1781267786_Levis 501 Original Straight.webp', 1, 1, 4.8, 321, '2026-06-07 09:48:39', '2026-06-12 19:36:26'),
+(2, 15, 1, 1, 'male', 'Levis 501 Original Straight', 'Levis', 'levis-501-original', 'Quan jeans Levis 501 huyen thoai, dang straight co dien khong bao gio loi mot.', 1790000, NULL, 51, 'levis_501_straight.jpg', 1, 1, 4.9, 289, '2026-06-07 09:48:39', '2026-06-12 19:24:47'),
+(3, 35, 1, 1, 'female', 'Levis 721 High Rise Skinny', 'Levis', 'levis-721-skinny', 'Quan jeans nu Levis 721 lung cao, form skinny ton dang toi da.', 1690000, 1350000, 89, 'levis_721_skinny.jpg', 1, 1, 4.8, 411, '2026-06-07 09:48:39', '2026-06-12 18:53:22'),
+(4, 13, 1, 1, 'male', 'Levis Trucker Jacket Classic', 'Levis', 'levis-trucker-jacket', 'Ao jacket denim Levis Trucker kinh dien tu thap nien 60.', 2290000, 1890000, 39, 'levis_trucker_jacket.jpg', 1, 1, 4.9, 151, '2026-06-07 09:48:39', '2026-06-12 18:53:22'),
 (5, 10, 1, 1, 'male', 'Levis Graphic Tee Logo', 'Levis', 'levis-graphic-tee', 'Ao thun nam Levis in logo co dien, chat cotton 100% mem mai.', 590000, 490000, 120, 'levis_graphic_tee.jpg', 1, 0, 4.4, 260, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
-(6, 53, 2, 1, 'unisex', 'Adidas Stan Smith Sneakers', 'Adidas', 'adidas-stan-smith', 'Giay Adidas Stan Smith huyen thoai mau trang voi logo 3 la xanh la kinh dien.', 2490000, 1990000, 60, 'adidas_stan_smith.jpg', 1, 1, 4.9, 520, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
+(6, 53, 2, 1, 'unisex', 'Adidas Stan Smith Sneakers', 'Adidas', 'adidas-stan-smith', 'Giay Adidas Stan Smith huyen thoai mau trang voi logo 3 la xanh la kinh dien.', 2490000, 1990000, 59, 'adidas_stan_smith.jpg', 1, 1, 4.9, 521, '2026-06-07 09:48:39', '2026-06-12 18:53:22'),
 (7, 53, 2, 1, 'unisex', 'Adidas Ultraboost 22', 'Adidas', 'adidas-ultraboost-22', 'Giay chay bo Adidas Ultraboost 22 voi dem Boost sieu nhe tra luc toi da.', 3990000, 3290000, 40, 'adidas_ultraboost_22.jpg', 1, 1, 4.8, 380, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
 (8, 53, 2, 1, 'unisex', 'Adidas Superstar Shell Toe', 'Adidas', 'adidas-superstar', 'Giay Adidas Superstar voi mui giay hinh vo so dac trung.', 2290000, NULL, 50, 'adidas_superstar.jpg', 1, 1, 4.7, 290, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
 (9, 50, 2, 1, 'unisex', 'Adidas Trefoil Hoodie', 'Adidas', 'adidas-trefoil-hoodie', 'Ao hoodie Adidas Originals voi logo Trefoil theu noi bat.', 1290000, 990000, 100, 'adidas_trefoil_hoodie.jpg', 1, 1, 4.6, 420, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
 (10, 10, 2, 1, 'male', 'Adidas Essentials 3-Stripes Tee', 'Adidas', 'adidas-3stripes-tee', 'Ao thun nam Adidas Essentials voi 3 soc dac trung o tay ao.', 690000, 550000, 150, 'adidas_3stripes_tee.jpg', 1, 0, 4.5, 340, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
 (11, 54, 2, 1, 'unisex', 'Adidas Classic Backpack', 'Adidas', 'adidas-classic-backpack', 'Balo Adidas Classic dung tich 21L, chong nuoc nhe.', 990000, NULL, 70, 'adidas_classic_backpack.jpg', 1, 0, 4.5, 210, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
-(12, 53, 3, 1, 'unisex', 'Nike Air Force 1 Low White', 'Nike', 'nike-air-force-1', 'Giay Nike Air Force 1 Low mau trang toan than bieu tuong.', 2790000, 2390000, 70, 'nike_af1_white.jpg', 1, 1, 4.9, 680, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
+(12, 53, 3, 1, 'unisex', 'Nike Air Force 1 Low White', 'Nike', 'nike-air-force-1', 'Giay Nike Air Force 1 Low mau trang toan than bieu tuong.', 2790000, 2390000, 69, 'nike_af1_white.jpg', 1, 1, 4.9, 681, '2026-06-07 09:48:39', '2026-06-12 18:59:46'),
 (13, 53, 3, 1, 'unisex', 'Nike Air Max 270', 'Nike', 'nike-air-max-270', 'Giay Nike Air Max 270 voi buong Air lon nhat, de phan luc em ai.', 3490000, 2890000, 50, 'nike_airmax_270.jpg', 1, 1, 4.8, 390, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
 (14, 53, 3, 1, 'female', 'Nike Court Legacy Lift', 'Nike', 'nike-court-legacy', 'Giay nu Nike Court Legacy Lift de platform cao 4cm ton dang.', 2490000, NULL, 45, 'nike_court_legacy.jpg', 1, 1, 4.7, 310, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
 (15, 10, 3, 1, 'male', 'Nike Dri-FIT Legend Tee', 'Nike', 'nike-dri-fit-tee', 'Ao thun nam Nike Dri-FIT cong nghe thoat mo hoi toc do nhanh.', 790000, 650000, 130, 'nike_dri_fit_tee.jpg', 1, 0, 4.5, 450, '2026-06-07 09:48:39', '2026-06-07 09:48:39'),
@@ -356,7 +381,7 @@ CREATE TABLE `vouchers` (
 INSERT INTO `vouchers` (`id`, `created_by`, `code`, `type`, `value`, `quantity`, `used_count`, `expires_at`, `is_active`) VALUES
 (1, 1, 'WELCOME20', 'percent', 20, 100, 0, '2025-12-31', 1),
 (2, 1, 'SAVE50K', 'fixed', 50000, 50, 0, '2025-06-30', 1),
-(3, 1, 'VIP30', 'percent', 30, 30, 0, '2025-12-31', 1);
+(3, 1, 'VIP30', 'percent', 30, 30, 0, '2026-12-31', 1);
 
 --
 -- Indexes for dumped tables
@@ -513,13 +538,13 @@ ALTER TABLE `emails`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `products`
