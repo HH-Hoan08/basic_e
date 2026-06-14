@@ -125,6 +125,16 @@ switch ($page) {
         $shopController = new ShopController();
         $shopController->single();
         break;
+    case 'forgot-password':
+        include_once './PasswordController.php';
+        $passwordController = new PasswordController();
+        $passwordController->forgot();
+        break;
+    case 'reset-password':
+        include_once './PasswordController.php';
+        $passwordController = new PasswordController();
+        $passwordController->reset();
+        break;
     case 'login':
     case 'register':
         include '../views/auth.php';
@@ -143,14 +153,4 @@ switch ($page) {
         // Giờ đây, CartController có thể kế thừa từ lớp Controller đã được nạp ở trên
         // và sử dụng các phương thức như model() hoặc view() một cách chính xác.
         $cartController = new CartController();
-        $cartController->index();
-        break;
-    default:
-        include '../views/home.php';
-        break;
-}
-
-if (strpos($page, 'admin') === false) {
-    include '../views/inc/footer.php';
-}
-?>
+        $cartController->i

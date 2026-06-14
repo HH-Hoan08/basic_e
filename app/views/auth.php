@@ -83,6 +83,9 @@ $action = ($page === 'register') ? 'register' : 'login';
                                 <input type="password" name="password" placeholder="Nhập mật khẩu..." required>
                             </div>
                         </div>
+                        <div class="text-end mb-3" style="font-size: 14px;">
+                            <a href="<?= BASE_URL ?>index.php?page=forgot-password" class="text-decoration-none text-success">Quên mật khẩu?</a>
+                        </div>
                         <!-- nút ấn đăng nhập -->
                         <button type="submit" class="btn-auth">Đăng nhập →</button>  
                     </form>

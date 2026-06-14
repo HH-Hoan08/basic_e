@@ -43,6 +43,9 @@ class App {
             if ($page === 'register') return ['Auth', 'register'];
             if ($page === 'logout') return ['Auth', 'logout'];
             if ($page === 'shop-single') return ['Shop', 'single'];
+            // Thêm route cho chức năng quên mật khẩu
+            if ($page === 'forgot-password') return ['Password', 'forgot'];
+            if ($page === 'reset-password') return ['Password', 'reset'];
             
             return [str_replace('-', '', $page)]; 
         }

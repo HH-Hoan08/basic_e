@@ -41,11 +41,41 @@
         public function getUserOrders(int $userId){ // Thay đổi tham số từ username sang userId
             // Try-catch đề phòng trường hợp bảng orders chưa tồn tại trong Database
             try {
-                $sql = 'SELECT * FROM orders WHERE user_id = ? ORDER BY ordered_at DESC'; // Sửa username thành user_id và created_at thành ordered_at
+                $sql = 'SELECT * FROM orders WHERE user_id = ? ORDER BY ordered_at DESC';
                 return $this->read_item($sql, [$userId]);
             } catch (Exception $e) {
-                return []; 
+                return [];
             }
         }
-    }
-?>
+
+        // Lấy thông tin user bằng email
+        public function getUserByEmail($email){
+            $sql = 'SELECT * FROM users WHERE email = ?'; 
+            $result = $this->read_item($sql, [$email]);
+            return !empty($result) ? $result[0] : null;
+        }
+
+        // Cập nhật mật khẩu bằng email
+        public function updatePasswordByEmail($email, $hashed_password){
+            $sql = 'UPDATE users SET password = ? WHERE email = ?';
+            return $this->execute_item($sql, [$hashed_password, $email]);
+        }
+
+        // --- Password Reset Methods ---
+        public function createPasswordResetToken(string $email, string $token): bool {
+            $this->deletePasswordResetToken($email); // Xóa token cũ nếu có
+            $sql = "INSERT INTO password_resets (email, token) VALUES (?, ?)";
+            return $this->execute_item($sql, [$email, $token]);
+        }
+
+        public function getPasswordResetToken(string $token) {
+            $sql = "SELECT * FROM password_resets WHERE token = ? AND created_at >= NOW() - INTERVAL 15 MINUTE";
+            $result = $this->read_item($sql, [$token]);
+            return !empty($result) ? $result[0] : null;
+        }
+
+        public function deletePasswordResetToken(string $email): bool {
+            $sql = "DELETE FROM password_resets WHERE email = ?";
+            return $this->execute_item($sql, [$email]);
+        }
+}
