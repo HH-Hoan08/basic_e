@@ -1,9 +1,14 @@
 <?php
 class App {
-    protected $controller = 'HomeController';
-    protected $method = 'index';
-    protected $params = [];
+    protected $controller = 'HomeController'; //Controller mặc định if not in controller.
+    protected $method = 'index'; //hàm của controller
+    protected $params = []; //thuộc tính để cung cấp cho hàm
 
+    //Hãy xem xét một URL ví dụ: http://localhost/basic_e/product/detail/123/size-M
+    // $controller sẽ được xác định là ProductController.
+    // $method sẽ được xác định là detail.
+    // $params sẽ là ['123', 'size-M'].   
+     
     public function __construct() {
         $url = $this->parseUrl();
 
