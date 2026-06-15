@@ -54,6 +54,7 @@ class ProductModel {
             'newest'     => 'p.created_at DESC',
             'bestseller' => 'p.sold_count DESC',
             'rating'     => 'p.avg_rating DESC',
+            'random'     => 'RAND()',
         ];
         $sort   = $orderMap[$filter['sort'] ?? 'featured'];
         // Cho phép tùy chỉnh giới hạn (dùng cho trang chủ)

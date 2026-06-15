@@ -19,6 +19,7 @@ class Product {
     private int $soldCount;
     private string $createdAt;
     private string $updateAt;
+    private int $reviewCount;
 
     private ?string $brandName;
     private ?string $categoryName;
@@ -50,6 +51,7 @@ class Product {
         $this->updateAt = ($data['updated_at'] ?? '');
         $this->brandName = ($data['brand_name'] ?? null);
         $this->categoryName = ($data['category_name'] ?? null);
+        $this->reviewCount = (int) ($data['review_count'] ?? 0);
     }
 
     //getter
@@ -115,6 +117,9 @@ class Product {
     }
     public function getCategoryName() : ?string { 
         return $this->categoryName;
+    }
+    public function getReviewCount(): int {
+        return $this->reviewCount;
     }
 
     //setter

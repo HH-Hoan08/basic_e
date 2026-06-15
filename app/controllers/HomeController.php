@@ -9,7 +9,7 @@ class HomeController extends Controller {
         $featuredProducts = $productModel->getProducts([
             'is_featured' => 1,
             'limit' => 3,
-            'sort' => 'bestseller' // Sắp xếp theo bán chạy nhất
+            'sort' => 'random' // Sắp xếp ngẫu nhiên
         ]);
 
         // Lấy 3 sản phẩm mới nhất cho banner

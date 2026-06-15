@@ -120,78 +120,46 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-12 col-md-4 mb-4">
-                    <div class="card h-100">
-                        <a href="index.php?page=shop-single">
-                            <img src="<?= BASE_URL ?>assets/img/feature_prod_01.jpg" class="card-img-top" alt="...">
-                        </a>
-                        <div class="card-body">
-                            <ul class="list-unstyled d-flex justify-content-between">
-                                <li>
-                                    <i class="text-warning fa fa-star"></i>
-                                    <i class="text-warning fa fa-star"></i>
-                                    <i class="text-warning fa fa-star"></i>
-                                    <i class="text-muted fa fa-star"></i>
-                                    <i class="text-muted fa fa-star"></i>
-                                </li>
-                                <li class="text-muted text-right">$240.00</li>
-                            </ul>
-                            <a href="index.php?page=shop-single" class="h2 text-decoration-none text-dark">Tạ tập Gym</a>
-                            <p class="card-text">
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt in culpa qui officia deserunt.
-                            </p>
-                            <p class="text-muted">Đánh giá (24)</p>
+                <?php if (!empty($featuredProducts)): ?>
+                    <?php foreach ($featuredProducts as $product): ?>
+                        <div class="col-12 col-md-4 mb-4">
+                            <div class="card h-100">
+                                <a href="index.php?page=shop-single&slug=<?= htmlspecialchars($product->getSlug()) ?>">
+                                    <img src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($product->getImage()) ?>" class="card-img-top" alt="<?= htmlspecialchars($product->getName()) ?>">
+                                </a>
+                                <div class="card-body">
+                                    <ul class="list-unstyled d-flex justify-content-between">
+                                        <li>
+                                            <?php
+                                            $rating = $product->getRatingRounded();
+                                            for ($i = 1; $i <= 5; $i++): ?>
+                                                <i class="fa fa-star <?= $i <= $rating ? 'text-warning' : 'text-muted' ?>"></i>
+                                            <?php endfor; ?>
+                                        </li>
+                                        <li class="text-muted text-right"><?= $product->formatPrice($product->getDisplayPrice()) ?></li>
+                                    </ul>
+                                    <a href="index.php?page=shop-single&slug=<?= htmlspecialchars($product->getSlug()) ?>" class="h2 text-decoration-none text-dark"><?= htmlspecialchars($product->getName()) ?></a>
+                                    <p class="card-text">
+                                        <?php
+                                        // Rút gọn mô tả để hiển thị
+                                        $description = htmlspecialchars($product->getDescription());
+                                        if (mb_strlen($description) > 100) {
+                                            echo mb_substr($description, 0, 100) . '...';
+                                        } else {
+                                            echo $description;
+                                        }
+                                        ?>
+                                    </p>
+                                    <p class="text-muted">Đánh giá (<?= $product->getReviewCount() ?>)</p>
+                                </div>
+                            </div>
                         </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="col-12 text-center">
+                        <p>Chưa có sản phẩm nổi bật nào để hiển thị.</p>
                     </div>
-                </div>
-                <div class="col-12 col-md-4 mb-4">
-                    <div class="card h-100">
-                        <a href="index.php?page=shop-single">
-                            <img src="<?= BASE_URL ?>assets/img/feature_prod_02.jpg" class="card-img-top" alt="...">
-                        </a>
-                        <div class="card-body">
-                            <ul class="list-unstyled d-flex justify-content-between">
-                                <li>
-                                    <i class="text-warning fa fa-star"></i>
-                                    <i class="text-warning fa fa-star"></i>
-                                    <i class="text-warning fa fa-star"></i>
-                                    <i class="text-muted fa fa-star"></i>
-                                    <i class="text-muted fa fa-star"></i>
-                                </li>
-                                <li class="text-muted text-right">$480.00</li>
-                            </ul>
-                            <a href="index.php?page=shop-single" class="h2 text-decoration-none text-dark">Giày Nike Cloud</a>
-                            <p class="card-text">
-                                Aenean gravida dignissim finibus. Nullam ipsum diam, posuere vitae pharetra sed, commodo ullamcorper.
-                            </p>
-                            <p class="text-muted">Đánh giá (48)</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-md-4 mb-4">
-                    <div class="card h-100">
-                        <a href="index.php?page=shop-single">
-                            <img src="<?= BASE_URL ?>assets/img/feature_prod_03.jpg" class="card-img-top" alt="...">
-                        </a>
-                        <div class="card-body">
-                            <ul class="list-unstyled d-flex justify-content-between">
-                                <li>
-                                    <i class="text-warning fa fa-star"></i>
-                                    <i class="text-warning fa fa-star"></i>
-                                    <i class="text-warning fa fa-star"></i>
-                                    <i class="text-warning fa fa-star"></i>
-                                    <i class="text-warning fa fa-star"></i>
-                                </li>
-                                <li class="text-muted text-right">$360.00</li>
-                            </ul>
-                            <a href="index.php?page=shop-single" class="h2 text-decoration-none text-dark">Giày Addides mùa hè</a>
-                            <p class="card-text">
-                                Curabitur ac mi sit amet diam luctus porta. Phasellus pulvinar sagittis diam, et scelerisque ipsum lobortis nec.
-                            </p>
-                            <p class="text-muted">Đánh giá (74)</p>
-                        </div>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </section>
