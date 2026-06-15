@@ -25,6 +25,28 @@
             color: white;
         }
         .content-wrapper { padding: 20px; }
+
+        /* Custom styles for customer tiers */
+        .badge.tier-member {
+            background-color: #6c757d;
+            color: white;
+        }
+        .badge.tier-silver {
+            background: linear-gradient(145deg, #c0c0c0, #e8e8e8);
+            color: #333;
+            border: 1px solid #a8a8a8;
+        }
+        .badge.tier-gold {
+            background: linear-gradient(145deg, #ffd700, #fff2a1);
+            color: #4d3c00;
+            border: 1px solid #d4b100;
+        }
+        .badge.tier-diamond {
+            background: linear-gradient(145deg, #89d5e6, #e0ffff);
+            color: #005f73;
+            border: 1px solid #7ac8dd;
+            text-shadow: 0 0 3px rgba(255,255,255,0.5);
+        }
     </style>
 </head>
 <body>

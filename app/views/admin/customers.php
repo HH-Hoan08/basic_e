@@ -42,10 +42,17 @@
                                 <td><strong><?= number_format($customer['total_spent'], 0, ',', '.') ?>đ</strong></td>
                                 <td>
                                     <?php 
-                                    $tier = $customer['tier'];
-                                    $tierClass = ['Member' => 'secondary', 'Silver' => 'info', 'Gold' => 'warning', 'Diamond' => 'primary'][$tier] ?? 'secondary';
+                                    $tier = $customer['tier'] ?? 'Member';
+                                    $tierInfo = [
+                                        'Member'  => ['class' => 'tier-member',  'icon' => 'fa-user', 'label' => 'Thành viên'],
+                                        'Silver'  => ['class' => 'tier-silver',  'icon' => 'fa-medal', 'label' => 'Bạc'],
+                                        'Gold'    => ['class' => 'tier-gold',    'icon' => 'fa-trophy', 'label' => 'Vàng'],
+                                        'Diamond' => ['class' => 'tier-diamond', 'icon' => 'fa-gem', 'label' => 'Kim cương']
+                                    ][$tier];
                                     ?>
-                                    <span class="badge bg-<?= $tierClass ?>"><?= htmlspecialchars($tier) ?></span>
+                                    <span class="badge <?= $tierInfo['class'] ?>">
+                                        <i class="fas <?= $tierInfo['icon'] ?> me-1"></i><?= $tierInfo['label'] ?>
+                                    </span>
                                 </td>
                                 <td>
                                     <span class="badge bg-<?= $customer['is_locked'] ? 'danger' : 'success' ?>"><?= $customer['is_locked'] ? 'Đã khóa' : 'Hoạt động' ?></span>
