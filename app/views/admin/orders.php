@@ -51,18 +51,23 @@
                                 </span>
                             </td>
                             <td>
-                                <form action="<?= BASE_URL ?>index.php?page=admin&action=orders" method="POST" class="d-flex align-items-center gap-2">
-                                    <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['id'] ?? '') ?>">
-                                    <select name="status" class="form-select form-select-sm">
-                                        <option value="pending" <?= $currentStatus === 'pending' ? 'selected' : '' ?>>Chờ xác nhận</option>
-                                        <option value="confirmed" <?= $currentStatus === 'confirmed' ? 'selected' : '' ?>>Đã xác nhận</option>
-                                        <option value="shipping" <?= $currentStatus === 'shipping' ? 'selected' : '' ?>>Đang giao</option>
-                                        <option value="delivered" <?= $currentStatus === 'delivered' ? 'selected' : '' ?>>Thành công</option>
-                                        <option value="cancelled" <?= $currentStatus === 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
-                                    </select>
-                                    <button type="submit" name="update_status" class="btn btn-sm btn-outline-success flex-shrink-0">Lưu</button>
+                                <?php if ($currentStatus === 'cancelled'): ?>
+                                    <span class="text-muted fst-italic me-2">Không thể sửa</span>
                                     <a href="<?= BASE_URL ?>index.php?page=admin&action=view_order&order_id=<?= $order['id'] ?>" class="btn btn-sm btn-outline-primary flex-shrink-0" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
-                                </form>
+                                <?php else: ?>
+                                    <form action="<?= BASE_URL ?>index.php?page=admin&action=orders" method="POST" class="d-flex align-items-center gap-2">
+                                        <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['id'] ?? '') ?>">
+                                        <select name="status" class="form-select form-select-sm">
+                                            <option value="pending" <?= $currentStatus === 'pending' ? 'selected' : '' ?>>Chờ xác nhận</option>
+                                            <option value="confirmed" <?= $currentStatus === 'confirmed' ? 'selected' : '' ?>>Đã xác nhận</option>
+                                            <option value="shipping" <?= $currentStatus === 'shipping' ? 'selected' : '' ?>>Đang giao</option>
+                                            <option value="delivered" <?= $currentStatus === 'delivered' ? 'selected' : '' ?>>Thành công</option>
+                                            <option value="cancelled" <?= $currentStatus === 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
+                                        </select>
+                                        <button type="submit" name="update_status" class="btn btn-sm btn-outline-success flex-shrink-0">Lưu</button>
+                                        <a href="<?= BASE_URL ?>index.php?page=admin&action=view_order&order_id=<?= $order['id'] ?>" class="btn btn-sm btn-outline-primary flex-shrink-0" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
+                                    </form>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>

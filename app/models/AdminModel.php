@@ -81,6 +81,12 @@ class AdminModel {
             }
             $currentStatus = $currentOrder['status'];
 
+            // [MỚI] Yêu cầu: Không cho phép thay đổi trạng thái của đơn hàng đã bị hủy.
+            if ($currentStatus === 'cancelled') {
+                $this->db->rollBack(); // Không có gì để commit
+                throw new Exception("Không thể thay đổi trạng thái của đơn hàng đã bị hủy.");
+            }
+
             // Nếu trạng thái không thay đổi thì không làm gì cả
             if ($currentStatus === $status) {
                 $this->db->rollBack(); // Không có gì để commit

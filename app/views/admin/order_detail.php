@@ -56,17 +56,21 @@
             <hr>
             <!-- Form cập nhật trạng thái đơn hàng -->
             <h5 class="mb-3">Cập nhật Trạng thái</h5>
-            <form action="<?= BASE_URL ?>index.php?page=admin&action=view_order&order_id=<?= $order['id'] ?>" method="POST" class="d-flex align-items-center m-0">
-                <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['id'] ?? '') ?>">
-                <select name="status" class="form-select form-select-sm me-2" style="width: 180px;">
-                    <option value="pending" <?= $currentStatus === 'pending' ? 'selected' : '' ?>>Chờ xác nhận</option>
-                    <option value="confirmed" <?= $currentStatus === 'confirmed' ? 'selected' : '' ?>>Đã xác nhận</option>
-                    <option value="shipping" <?= $currentStatus === 'shipping' ? 'selected' : '' ?>>Đang giao</option>
-                    <option value="delivered" <?= $currentStatus === 'delivered' ? 'selected' : '' ?>>Thành công</option>
-                    <option value="cancelled" <?= $currentStatus === 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
-                </select>
-                <button type="submit" name="update_status" class="btn btn-sm btn-success">Lưu trạng thái</button>
-            </form>
+            <?php if ($currentStatus === 'cancelled'): ?>
+                <p class="text-muted fst-italic">Đơn hàng đã bị hủy và không thể thay đổi trạng thái.</p>
+            <?php else: ?>
+                <form action="<?= BASE_URL ?>index.php?page=admin&action=view_order&order_id=<?= $order['id'] ?>" method="POST" class="d-flex align-items-center m-0">
+                    <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['id'] ?? '') ?>">
+                    <select name="status" class="form-select form-select-sm me-2" style="width: 180px;">
+                        <option value="pending" <?= $currentStatus === 'pending' ? 'selected' : '' ?>>Chờ xác nhận</option>
+                        <option value="confirmed" <?= $currentStatus === 'confirmed' ? 'selected' : '' ?>>Đã xác nhận</option>
+                        <option value="shipping" <?= $currentStatus === 'shipping' ? 'selected' : '' ?>>Đang giao</option>
+                        <option value="delivered" <?= $currentStatus === 'delivered' ? 'selected' : '' ?>>Thành công</option>
+                        <option value="cancelled" <?= $currentStatus === 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
+                    </select>
+                    <button type="submit" name="update_status" class="btn btn-sm btn-success">Lưu trạng thái</button>
+                </form>
+            <?php endif; ?>
         </div>
     </div>
 
