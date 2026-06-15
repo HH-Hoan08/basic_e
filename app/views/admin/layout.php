@@ -47,9 +47,6 @@
                 <a href="<?= BASE_URL ?>index.php?page=admin&action=customers" class="<?= ($_GET['action'] ?? '') === 'customers' ? 'active' : '' ?>">
                     <i class="fas fa-users me-2"></i> Quản lý Khách hàng
                 </a>
-                <a href="<?= BASE_URL ?>index.php?page=admin&action=employees" class="<?= ($_GET['action'] ?? '') === 'employees' ? 'active' : '' ?>">
-                    <i class="fas fa-user-tie me-2"></i> Quản lý Nhân viên
-                </a>
                 <a href="<?= BASE_URL ?>index.php?page=admin&action=vouchers" class="<?= in_array(($_GET['action'] ?? ''), ['vouchers', 'add_voucher', 'edit_voucher']) ? 'active' : '' ?>">
                     <i class="fas fa-ticket-alt me-2"></i> Quản lý Voucher
                 </a>

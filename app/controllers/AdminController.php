@@ -60,7 +60,7 @@ class AdminController extends Controller {
             case 'send_password_reset':
                 $this->sendPasswordReset();
                 break;
-            // Các route khác như products, employees, vouchers... bạn sẽ thêm vào đây
+            // Các route khác như products, vouchers... bạn sẽ thêm vào đây
             default:
                 $this->dashboard();
                 break;
