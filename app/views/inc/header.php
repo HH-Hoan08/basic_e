@@ -156,7 +156,7 @@
                                     <li><hr class="dropdown-divider"></li>
                                 <?php endif; ?>
                                 <li><a class="dropdown-item" href="index.php?page=profile">Thông tin tài khoản</a></li>
-                                <li><a class="dropdown-item" href="index.php?page=orders">Đơn hàng của tôi</a></li>
+                                <li><a class="dropdown-item" href="index.php?page=profile#orders">Đơn hàng của tôi</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="index.php?page=logout">Đăng xuất</a></li>
                             <?php else: ?>
