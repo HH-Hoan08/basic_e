@@ -16,6 +16,11 @@ class ProfileController extends Controller {
             unset($_SESSION['profile_error']);
         }
         $success = '';
+        // [SỬA] Lấy thông báo thành công từ session (sau khi hủy đơn,...)
+        if (isset($_SESSION['profile_success'])) {
+            $success = $_SESSION['profile_success'];
+            unset($_SESSION['profile_success']);
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_POST['btn_update_avatar'])) {
@@ -79,6 +84,26 @@ class ProfileController extends Controller {
         // Nếu có action là 'view_order', chuyển sang xử lý chi tiết đơn hàng
         if (isset($_GET['action']) && $_GET['action'] === 'view_order') {
             return $this->viewOrder($userInfo['id']);
+        }
+
+        // [MỚI] Xử lý hủy đơn hàng từ người dùng
+        if (isset($_GET['action']) && $_GET['action'] === 'cancel_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $orderId = (int)($_POST['order_id'] ?? 0);
+            $orderModel = $this->model('OrderModel');
+            
+            try {
+                // Gọi model để hủy đơn, truyền cả userId để xác thực quyền sở hữu
+                if ($orderModel->cancelOrder($orderId, $userInfo['id'])) {
+                    $_SESSION['profile_success'] = "Đã hủy đơn hàng #{$orderId} thành công. Kho hàng đã được cập nhật.";
+                } else {
+                    $_SESSION['profile_error'] = "Không thể hủy đơn hàng #{$orderId}.";
+                }
+            } catch (Exception $e) {
+                $_SESSION['profile_error'] = "Lỗi: " . $e->getMessage();
+            }
+
+            header("Location: " . BASE_URL . "index.php?page=profile#orders");
+            exit();
         }
 
         // lấy email admin gửi cho user
