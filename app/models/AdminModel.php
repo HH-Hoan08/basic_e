@@ -480,4 +480,18 @@ class AdminModel {
         return 0;
         }
     }
+
+    /**
+     * Kiểm tra trạng thái khóa của một người dùng bằng username.
+     * Dùng cho việc kiểm tra toàn cục (global check).
+     * @param string $username
+     * @return bool Trả về true nếu bị khóa, ngược lại false.
+     */
+    public function checkUserLockStatus(string $username): bool {
+        $sql = "SELECT is_locked FROM users WHERE username = ? LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$username]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return ($result && $result['is_locked'] == 1);
+    }
 }

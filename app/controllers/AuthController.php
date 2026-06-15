@@ -10,19 +10,30 @@ class AuthController extends Controller {
         $userModel = $this->model('userauth');
         $error = '';
         $success = '';
-
+        
+        // Hiển thị thông báo nếu bị khóa và chuyển hướng từ check global
+        if (isset($_GET['locked']) && $_GET['locked'] == 1) {
+            $error = 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.';
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $username = $_POST['username'];
             $password = $_POST['password'];
             $user = $userModel->getUser($username, $username);
 
-            if (!empty($user) && password_verify($password, $user[0]['password'])) {
-                $_SESSION['user'] = $user[0]['username'];
-                $_SESSION['role'] = $user[0]['role'] ?? 'user';
-                header("Location: " . BASE_URL);
-                exit();
+            if (!empty($user)) {
+                if ($user[0]['is_locked'] == 1) {
+                    $error = 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.';
+                } elseif (password_verify($password, $user[0]['password'])) {
+                    $_SESSION['user'] = $user[0]['username'];
+                    $_SESSION['role'] = $user[0]['role'] ?? 'user';
+                    header("Location: " . BASE_URL);
+                    exit();
+                } else {
+                    $error = 'Tên đăng nhập hoặc mật khẩu không chính xác.';
+                }
             } else {
-                $error = 'Đăng nhập thất bại do mật khẩu hoặc người dùng không tồn tại';
+                $error = 'Tên đăng nhập hoặc mật khẩu không chính xác.';
             }
         }
 

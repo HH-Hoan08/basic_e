@@ -32,7 +32,7 @@
         <!-- Sidebar Navigation -->
         <div class="sidebar flex-column" style="width: 250px;">
             <h4 class="text-center py-4 border-bottom border-secondary mb-0">
-                <i class="fas fa-user-shield me-2"></i> ADMIN PANEL
+                <i class="fas fa-user-shield me-2"></i> Bảng điều khiển ADMIN
             </h4>
             <nav class="nav flex-column mt-3">
                 <a href="<?= BASE_URL ?>index.php?page=admin&action=dashboard" class="<?= ($_GET['action'] ?? 'dashboard') === 'dashboard' ? 'active' : '' ?>">
