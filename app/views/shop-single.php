@@ -202,26 +202,6 @@ foreach ($variants as $v) {
                             </li>
                         </ul>
 
-                        <!-- Specification: hiển thị từng dòng description -->
-                        <h6>Specification:</h6>
-                        <ul class="list-unstyled pb-3">
-                            <?php
-                            $lines = array_filter(
-                                explode("\n", $product->getDescription() ?? ''),
-                                fn($l) => trim($l) !== ''
-                            );
-                            if (!empty($lines)):
-                                foreach ($lines as $line):
-                            ?>
-                                <li><?= htmlspecialchars(trim($line)) ?></li>
-                            <?php
-                                endforeach;
-                            else:
-                            ?>
-                                <li>Chưa có thông số kỹ thuật.</li>
-                            <?php endif; ?>
-                        </ul>
-
                         <!-- Form chọn size + số lượng + mua -->
                         <form action="<?= BASE_URL ?>index.php?page=cart&action=add" method="POST">
                             <input type="hidden" name="product_id"    value="<?= $product->getId() ?>">

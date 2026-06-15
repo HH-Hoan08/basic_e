@@ -14,14 +14,12 @@
                         </div>
                         <div class="col-lg-6 mb-0 d-flex align-items-center">
                             <div class="text-align-left align-self-center">
-                                <h1 class="h1 text-success"><b>Basic</b> eCommerce</h1>
-                                <h3 class="h2">Mẫu eCommerce nhỏ gọn và hoàn hảo</h3>
+                                <h1 class="h1 text-success"><b>Basic</b></h1>
+                                <h3 class="h2">Cửa hàng bán hàng trực tuyến</h3>
                                 <p>
-                                    Basic Shop là một mẫu eCommerce HTML5 CSS với phiên bản mới nhất của Bootstrap 5 (beta 1).
-                                    Mẫu này được cung cấp miễn phí 100% bởi trang web <a rel="sponsored" class="text-success" href="https://templatemo.com" target="_blank">TemplateMo</a>.
-                                    Nguồn ảnh từ <a rel="sponsored" class="text-success" href="https://stories.freepik.com/" target="_blank">Freepik Stories</a>,
-                                    <a rel="sponsored" class="text-success" href="https://unsplash.com/" target="_blank">Unsplash</a> và
-                                    <a rel="sponsored" class="text-success" href="https://icons8.com/" target="_blank">Icons 8</a>.
+                                    Tại Basic, chúng tôi định nghĩa lại trải nghiệm mua sắm trực tuyến bằng một hệ thống vận hành tự động, khép kín và bảo mật tuyệt đối. 
+                                    Chúng tôi cung cấp người dùng được hỗ trợ tối đa từ khâu tìm kiếm, lựa chọn sản phẩm đa dạng cho đến quy trình đặt hàng và hủy đơn hàng linh hoạt khi thay đổi nhu cầu. 
+                                    Mọi lịch sử mua sắm và thông tin phân hạng thành viên của bạn đều được lưu trữ đồng bộ, giúp bạn không bỏ lỡ bất kỳ chương trình khuyến mãi hay thông báo quan trọng nào từ đội ngũ quản trị viên, cam kết mang đến một dịch vụ uy tín và tận tâm hàng đầu.
                                 </p>
                             </div>
                         </div>
@@ -36,11 +34,10 @@
                         </div>
                         <div class="col-lg-6 mb-0 d-flex align-items-center">
                             <div class="text-align-left">
-                                <h1 class="h1">Proident occaecat</h1>
-                                <h3 class="h2">Aliquip ex ea commodo consequat</h3>
+                                <h1 class="h1">Mua sẵm trực tuyến</h1>
+                                <h3 class="h2">Định hình phong cách - Khẳng định cá tính</h3>
                                 <p>
-                                    Bạn được phép sử dụng mẫu Basic CSS này cho các trang web thương mại của mình.
-                                    Bạn <strong>không được phép</strong> phân phối lại tệp ZIP của mẫu trên bất kỳ loại trang web bộ sưu tập mẫu nào.
+                                    Cập nhật liên tục những xu hướng thời trang mới nhất từ các thương hiệu hàng đầu. Chất liệu cao cấp, form dáng chuẩn cùng chính sách đổi trả linh hoạt trong vòng 7 ngày trên toàn quốc.
                                 </p>
                             </div>
                         </div>
@@ -55,11 +52,11 @@
                         </div>
                         <div class="col-lg-6 mb-0 d-flex align-items-center">
                             <div class="text-align-left">
-                                <h1 class="h1">Repr in voluptate</h1>
-                                <h3 class="h2">Ullamco laboris nisi ut </h3>
+                                <h1 class="h1">HỆ THỐNG DỊCH VỤ TỰ ĐỘNG</h1>
+                                <h3 class="h2">Tối ưu hóa quy trình xử lý đơn hàng và tương tác</h3>
                                 <p>
-                                    Chúng tôi mang đến cho bạn các mẫu CSS miễn phí 100% cho trang web của bạn.
-                                    Nếu bạn muốn hỗ trợ TemplateMo, vui lòng đóng góp một khoản nhỏ qua PayPal hoặc nói với bạn bè về trang web của chúng tôi. Cảm ơn bạn.
+                                    Tích hợp các giải pháp công nghệ hiện đại từ khâu tra cứu sản phẩm, áp dụng mã giảm giá tự động đến hệ thống cập nhật trạng thái vận chuyển theo thời gian thực. 
+                                    Giúp khách hàng dễ dàng theo dõi hành trình đơn hàng chỉ với một cú click.
                                 </p>
                             </div>
                         </div>

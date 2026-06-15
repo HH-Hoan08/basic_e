@@ -12,11 +12,11 @@
                         </li>
                         <li>
                             <i class="fa fa-phone fa-fw"></i>
-                            <a class="text-decoration-none" href="tel:010-020-0340">0705972231</a>
+                            <a class="text-decoration-none" href="javascript:void(0);">0705972231</a>
                         </li>
                         <li>
                             <i class="fa fa-envelope fa-fw"></i>
-                            <a class="text-decoration-none" href="mailto:info@company.com">phamhuuphu31102005@gmail.com</a>
+                            <a class="text-decoration-none" href="javascript:void(0);">basicadmin4@gmail.com</a>
                         </li>
                     </ul>
                 </div>
@@ -24,13 +24,13 @@
                 <div class="col-md-4 pt-5">
                     <h2 class="h2 text-light border-bottom pb-3 border-light">Sản phẩm</h2>
                     <ul class="list-unstyled text-light footer-link-list">
-                        <li><a class="text-decoration-none" href="#">Sang trọng</a></li>
-                        <li><a class="text-decoration-none" href="#">Đồ thể thao</a></li>
-                        <li><a class="text-decoration-none" href="#">Giày nam</a></li>
-                        <li><a class="text-decoration-none" href="#">Giày nữ</a></li>
-                        <li><a class="text-decoration-none" href="#">Váy phổ biến</a></li>
-                        <li><a class="text-decoration-none" href="#">Phụ kiện tập Gym</a></li>
-                        <li><a class="text-decoration-none" href="#">Giày thể thao</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=shop">Sang trọng</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=shop">Đồ thể thao</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=shop">Giày nam</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=shop">Giày nữ</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=shop">Váy phổ biến</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=shop">Phụ kiện tập Gym</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=shop">Giày thể thao</a></li>
                     </ul>
                 </div>
 
@@ -40,7 +40,7 @@
                         <li><a class="text-decoration-none" href="index.php?page=home">Trang chủ</a></li>
                         <li><a class="text-decoration-none" href="index.php?page=about">Về chúng tôi</a></li>
                         <li><a class="text-decoration-none" href="index.php?page=contact">Địa chỉ cửa hàng</a></li>
-                        <li><a class="text-decoration-none" href="index.php?page=faq">Câu hỏi thường gặp</a></li>
+                        <li><a class="text-decoration-none" href="index.php?page=contact">Câu hỏi thường gặp</a></li>   
                         <li><a class="text-decoration-none" href="index.php?page=contact">Liên hệ</a></li>
                     </ul>
                 </div>
@@ -54,16 +54,16 @@
                 <div class="col-auto me-auto">
                     <ul class="list-inline text-left footer-icons">
                         <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="http://facebook.com/"><i class="fab fa-facebook-f fa-lg fa-fw"></i></a>
+                            <a class="text-light text-decoration-none" href="javascript:void(0);"><i class="fab fa-facebook-f fa-lg fa-fw"></i></a>
                         </li>
                         <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.instagram.com/"><i class="fab fa-instagram fa-lg fa-fw"></i></a>
+                            <a class="text-light text-decoration-none" href="javascript:void(0);"><i class="fab fa-instagram fa-lg fa-fw"></i></a>
                         </li>
                         <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://twitter.com/"><i class="fab fa-twitter fa-lg fa-fw"></i></a>
+                            <a class="text-light text-decoration-none" href="javascript:void(0);"><i class="fab fa-twitter fa-lg fa-fw"></i></a>
                         </li>
                         <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.linkedin.com/"><i class="fab fa-linkedin fa-lg fa-fw"></i></a>
+                            <a class="text-light text-decoration-none" href="javascript:void(0);"><i class="fab fa-linkedin fa-lg fa-fw"></i></a>
                         </li>
                     </ul>
                 </div>
