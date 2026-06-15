@@ -36,6 +36,8 @@ class ProductModel {
             $params[] = (int)$filter['category_id'];
         }
         if (!empty($filter['on_sale']))   $where[] = 'p.sale_price IS NOT NULL';
+        // Thêm bộ lọc cho sản phẩm nổi bật (dùng cho trang chủ)
+        if (!empty($filter['is_featured'])) $where[] = 'p.is_featured = 1';
         if (!empty($filter['q'])) { // Mở rộng tìm kiếm để kết quả phù hợp hơn
             $where[]  = '(p.name LIKE ? OR p.brand LIKE ? OR p.description LIKE ? OR c.name LIKE ?)';
             $kw       = '%' . $filter['q'] . '%';
@@ -54,10 +56,13 @@ class ProductModel {
             'rating'     => 'p.avg_rating DESC',
         ];
         $sort   = $orderMap[$filter['sort'] ?? 'featured'];
-        $limit  = 9;
+        // Cho phép tùy chỉnh giới hạn (dùng cho trang chủ)
+        $limit  = (int)($filter['limit'] ?? 9);
         $offset = (max(1, (int)($filter['page'] ?? 1)) - 1) * $limit;
 
-        $sql = "SELECT p.*, b.name AS brand_name, c.name AS category_name
+        // Thêm subquery để đếm số review hiệu quả
+        $sql = "SELECT p.*, b.name AS brand_name, c.name AS category_name,
+                       (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.is_visible = 1) as review_count
                 FROM   products p
                 LEFT JOIN brands     b ON p.brand_id    = b.id
                 LEFT JOIN categories c ON p.category_id = c.id
@@ -199,6 +204,54 @@ class ProductModel {
             "SELECT * FROM brands WHERE is_active = 1 ORDER BY sort_order ASC"
         )->fetchAll(PDO::FETCH_ASSOC);
         return array_map(fn($row) => new Brand($row), $rows);
+    }
+
+    /**
+     * Lấy thương hiệu ngẫu nhiên — trả về Brand[]
+     * @param int $limit
+     * @return Brand[]
+     */
+    public function getRandomBrands(int $limit = 3): array {
+        $stmt = $this->db->prepare(
+            "SELECT * FROM brands WHERE is_active = 1 ORDER BY RAND() LIMIT ?"
+        );
+        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(fn($row) => new Brand($row), $rows);
+    }
+
+    /**
+     * Lấy danh sách các danh mục có sản phẩm, dựa trên các bộ lọc khác (như hãng, giới tính).
+     * Dùng cho sidebar trang shop để danh sách danh mục luôn phù hợp.
+     * @param array $filter
+     * @return array
+     */
+    public function getAvailableCategories(array $filter = []): array {
+        $where = ['p.is_active = 1'];
+        $params = [];
+
+        if (!empty($filter['gender']) && $filter['gender'] !== 'all') {
+            $where[] = 'p.gender = ?';
+            $params[] = $filter['gender'];
+        }
+        if (!empty($filter['brand_id'])) {
+            $where[] = 'p.brand_id = ?';
+            $params[] = (int)$filter['brand_id'];
+        }
+        // Không lọc theo category_id ở đây vì chúng ta đang lấy chính danh sách category
+
+        $sql = "SELECT c.id, c.name, c.slug, COUNT(p.id) as product_count
+                FROM categories c
+                JOIN products p ON c.id = p.category_id
+                WHERE " . implode(' AND ', $where) . "
+                GROUP BY c.id, c.name, c.slug
+                HAVING product_count > 0
+                ORDER BY c.name ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Đếm sản phẩm (phân trang)

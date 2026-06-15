@@ -75,35 +75,37 @@
     <!-- Kết thúc Banner -->
 
 
-    <!-- Bắt đầu Danh mục -->
+    <!-- Bắt đầu Thương hiệu -->
     <section class="container pb-5" id="categories-of-month">
         <div class="row text-center pt-3">
             <div class="col-lg-6 m-auto">
-                <h1 class="h1">Danh mục của tháng</h1>
+                <h1 class="h1">Thương hiệu nổi bật</h1>
                 <p>
-                    Ngoại trừ những người có tội không nhận ra, họ có lỗi khi từ bỏ nhiệm vụ của mình, đó là sự mệt mỏi của tâm hồn.
+                    Khám phá các bộ sưu tập độc quyền từ những thương hiệu hàng đầu mà chúng tôi hợp tác.
                 </p>
             </div>
         </div>
         <div class="row">
-            <div class="col-12 col-md-4 p-5 mt-3">
-                <a href="#"><img src="<?= BASE_URL ?>assets/img/category_img_01.jpg" class="rounded-circle img-fluid border"></a>
-                <h5 class="text-center mt-3 mb-3">Đồng hồ</h5>
-                <p class="text-center"><a class="btn btn-success">Đến cửa hàng</a></p>
-            </div>
-            <div class="col-12 col-md-4 p-5 mt-3">
-                <a href="#"><img src="<?= BASE_URL ?>assets/img/category_img_02.jpg" class="rounded-circle img-fluid border"></a>
-                <h2 class="h5 text-center mt-3 mb-3">Giày</h2>
-                <p class="text-center"><a class="btn btn-success">Đến cửa hàng</a></p>
-            </div>
-            <div class="col-12 col-md-4 p-5 mt-3">
-                <a href="#"><img src="<?= BASE_URL ?>assets/img/category_img_03.jpg" class="rounded-circle img-fluid border"></a>
-                <h2 class="h5 text-center mt-3 mb-3">Phụ kiện</h2>
-                <p class="text-center"><a class="btn btn-success">Đến cửa hàng</a></p>
-            </div>
+            <?php
+            // Dữ liệu $brands được truyền từ HomeController
+            if (!empty($brands)):
+                foreach ($brands as $brand):
+                    ?>
+                    <div class="col-12 col-md-4 p-5 mt-3">
+                        <a href="index.php?page=shop&brand_id=<?= htmlspecialchars($brand->getId()) ?>">
+                            <!-- Thêm class 'brand-img' để có hiệu ứng hover và style để đảm bảo logo hiển thị đẹp -->
+                            <img src="<?= BASE_URL ?>assets/img/<?= htmlspecialchars($brand->getLogo()) ?>" class="img-fluid brand-img" alt="<?= htmlspecialchars($brand->getName()) ?>" style="height: 150px; object-fit: contain; width: 100%;">
+                        </a>
+                        <h2 class="h5 text-center mt-3 mb-3"><?= htmlspecialchars($brand->getName()) ?></h2>
+                        <p class="text-center"><a href="index.php?page=shop&brand_id=<?= htmlspecialchars($brand->getId()) ?>" class="btn btn-success">Xem sản phẩm</a></p>
+                    </div>
+                <?php endforeach;
+            else: ?>
+                <div class="col-12 text-center"><p>Chưa có thương hiệu nào để hiển thị.</p></div>
+            <?php endif; ?>
         </div>
     </section>
-    <!-- Kết thúc Danh mục -->
+    <!-- Kết thúc Thương hiệu -->
 
 
     <!-- Bắt đầu Sản phẩm nổi bật -->
