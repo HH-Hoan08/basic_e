@@ -85,8 +85,8 @@ class ProfileController extends Controller {
         $emailModel = $this->model('AdminModel');
         $userEmails = [];
         if ($userInfo) {
-            $membership = $userInfo['membership'] ?? 'silver';
-            $userEmails = $emailModel->getEmailsForUser($userInfo['username'], $membership);
+            $tier = $userModel->getUserTier($userInfo['id']);
+            $userEmails = $emailModel->getEmailsForUser($userInfo['username'], $tier);
         }
 
         // Lấy đánh giá của user

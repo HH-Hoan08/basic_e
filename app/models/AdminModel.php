@@ -450,7 +450,7 @@ class AdminModel {
     public function getEmailsForUser(string $username, string $membership): array {
         $sql = "SELECT e.*, u.fullname AS admin_name
                 FROM   emails e
-                JOIN   users u ON e.sent_by = u.id
+                LEFT JOIN users u ON e.sent_by = u.id
                 WHERE  e.recipient_type = 'all'
                     OR  e.recipient_type = ?
                     OR  e.recipient_type = ?
@@ -493,5 +493,15 @@ class AdminModel {
         $stmt->execute([$username]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return ($result && $result['is_locked'] == 1);
+    }
+
+    // ==========================================
+    // 10. GỬI THÔNG BÁO
+    // ==========================================
+    public function saveEmailNotification(string $recipient, string $subject, string $body, int $adminId): bool {
+        $sql = "INSERT INTO emails (recipient_type, subject, body, sent_by, sent_at) 
+                VALUES (?, ?, ?, ?, NOW())";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$recipient, $subject, $body, $adminId]);
     }
 }

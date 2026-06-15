@@ -85,4 +85,23 @@
             $sql = "DELETE FROM password_resets WHERE email = ?";
             return $this->execute_item($sql, [$email]);
         }
+
+        /**
+         * Lấy hạng thành viên của người dùng dựa trên tổng chi tiêu.
+         * @param int $userId
+         * @return string Hạng thành viên (vd: 'member', 'silver', 'gold', 'diamond')
+         */
+        public function getUserTier(int $userId): string {
+            $sql = "SELECT 
+                       LOWER(CASE 
+                           WHEN SUM(o.total_price) >= 50000000 THEN 'Diamond'
+                           WHEN SUM(o.total_price) >= 20000000 THEN 'Gold'
+                           WHEN SUM(o.total_price) >= 5000000 THEN 'Silver'
+                           ELSE 'Member'
+                       END) as tier
+                    FROM orders o
+                    WHERE o.user_id = ? AND o.status = 'delivered'";
+            $result = $this->read_item($sql, [$userId]);
+            return $result[0]['tier'] ?? 'member';
+        }
 }

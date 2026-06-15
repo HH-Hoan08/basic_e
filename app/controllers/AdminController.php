@@ -60,6 +60,9 @@ class AdminController extends Controller {
             case 'send_password_reset':
                 $this->sendPasswordReset();
                 break;
+            case 'send_email':
+                $this->sendEmail();
+                break;
             // Các route khác như products, vouchers... bạn sẽ thêm vào đây
             default:
                 $this->dashboard();
@@ -425,6 +428,45 @@ class AdminController extends Controller {
 
         header("Location: " . BASE_URL . "index.php?page=admin&action=customers");
         exit();
+    }
+
+    // ==========================================
+    // 8. GỬI THÔNG BÁO CHO NGƯỜI DÙNG
+    // ==========================================
+    private function sendEmail() {
+        $message = null;
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_email_submit'])) {
+            $data = [
+                'recipient_type' => $_POST['recipient_type'],
+                'specific_user'  => trim($_POST['specific_user']),
+                'subject'        => trim($_POST['subject']),
+                'body'           => trim($_POST['body']),
+                'sent_by'        => 1, // Giả định admin ID 1 là người gửi
+            ];
+
+            // Xác định người nhận cuối cùng
+            $recipient = $data['recipient_type'];
+            if ($recipient === 'specific') {
+                if (empty($data['specific_user'])) {
+                    $message = ['type' => 'danger', 'text' => 'Vui lòng nhập tên người dùng cụ thể.'];
+                } else {
+                    $recipient = $data['specific_user'];
+                }
+            }
+
+            if (!$message) {
+                if (empty($data['subject']) || empty($data['body'])) {
+                    $message = ['type' => 'danger', 'text' => 'Chủ đề và nội dung không được để trống.'];
+                } else {
+                    $success = $this->adminModel->saveEmailNotification($recipient, $data['subject'], $data['body'], $data['sent_by']);
+                    $message = $success 
+                        ? ['type' => 'success', 'text' => 'Đã gửi thông báo thành công!']
+                        : ['type' => 'danger', 'text' => 'Gửi thông báo thất bại. Có lỗi xảy ra.'];
+                }
+            }
+        }
+
+        $this->renderAdminView('send_email', ['message' => $message]);
     }
 
     // ==========================================

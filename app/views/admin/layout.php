@@ -36,7 +36,7 @@
             </h4>
             <nav class="nav flex-column mt-3">
                 <a href="<?= BASE_URL ?>index.php?page=admin&action=dashboard" class="<?= ($_GET['action'] ?? 'dashboard') === 'dashboard' ? 'active' : '' ?>">
-                    <i class="fas fa-tachometer-alt me-2"></i> Tổng quan (Dashboard)
+                    <i class="fas fa-tachometer-alt me-2"></i> Tổng quan
                 </a>
                 <a href="<?= BASE_URL ?>index.php?page=admin&action=orders" class="<?= ($_GET['action'] ?? '') === 'orders' ? 'active' : '' ?>">
                     <i class="fas fa-shopping-cart me-2"></i> Quản lý Đơn hàng
@@ -52,6 +52,9 @@
                 </a>
                 <a href="<?= BASE_URL ?>index.php?page=admin&action=reviews" class="<?= in_array(($_GET['action'] ?? ''), ['reviews']) ? 'active' : '' ?>">
                     <i class="fas fa-comments me-2"></i> Quản lý Đánh giá
+                </a>
+                <a href="<?= BASE_URL ?>index.php?page=admin&action=send_email" class="<?= in_array(($_GET['action'] ?? ''), ['send_email']) ? 'active' : '' ?>">
+                    <i class="fas fa-paper-plane me-2"></i> Gửi thông báo
                 </a>
                 <a href="<?= BASE_URL ?>index.php?page=home" class="mt-5 text-warning">
                     <i class="fas fa-sign-out-alt me-2"></i> Trở về Trang chủ
