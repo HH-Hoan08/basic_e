@@ -37,7 +37,7 @@
 │   │   └── xl_data.php
 │   │
 │   ├── 📁 services
-│   │   ├── MailService.php
+│   │   └── MailService.php
 │   │
 │   └── 📁 views
 │   │   ├── 📁 admin
@@ -69,6 +69,7 @@
 │   │   └── profile.php
 │   │   └── reset_password.php
 │   │   └── review.php
+│   └── init.php
 ├── 📁 assets/                 		# css, js, images, webfonts
 │   ├── 📁 css/
 │   ├── 📁 js/
