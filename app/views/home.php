@@ -68,17 +68,15 @@
             </div>
         </div>
         <a class="carousel-control-prev text-decoration-none w-auto ps-3" href="#template-mo-zay-hero-carousel" role="button" data-bs-slide="prev">
-            <i class="fas fa-chevron-left"></i>
         </a>
         <a class="carousel-control-next text-decoration-none w-auto pe-3" href="#template-mo-zay-hero-carousel" role="button" data-bs-slide="next">
-            <i class="fas fa-chevron-right"></i>
         </a>
     </div>
     <!-- Kết thúc Banner -->
 
 
     <!-- Bắt đầu Danh mục -->
-    <section class="container py-5">
+    <section class="container pb-5" id="categories-of-month">
         <div class="row text-center pt-3">
             <div class="col-lg-6 m-auto">
                 <h1 class="h1">Danh mục của tháng</h1>
