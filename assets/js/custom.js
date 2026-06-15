@@ -6,10 +6,8 @@
 /**
  * Hiệu ứng Typewriter cho banner trang chủ
  */
-document.addEventListener("DOMContentLoaded", function() {
-    const carousel = document.getElementById('template-mo-zay-hero-carousel');
-    if (!carousel) return; // Chỉ chạy nếu có carousel
-
+const carousel = document.getElementById('template-mo-zay-hero-carousel');
+if (carousel) { // Chỉ chạy mã typewriter nếu có carousel
     const allSlides = carousel.querySelectorAll('.carousel-item');
 
     // Lưu trữ văn bản gốc của các tiêu đề
@@ -86,4 +84,56 @@ document.addEventListener("DOMContentLoaded", function() {
         allSlides.forEach(slide => { if (slide !== activeSlide) resetSlide(slide); });
         if (activeSlide) animateSlide(activeSlide);
     });
-});
+}
+
+/**
+ * Hiệu ứng xuất hiện ngẫu nhiên khi cuộn trang
+ */
+const animationClasses = ['fade-in-up', 'fade-in-left', 'fade-in-right', 'zoom-in'];
+// Nhắm vào các cột chứa thương hiệu và sản phẩm nổi bật
+const elementsToAnimate = document.querySelectorAll('#categories-of-month .col-md-4, section.bg-light .col-md-4.mb-4');
+
+if ('IntersectionObserver' in window && elementsToAnimate.length > 0) {
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                // Chọn một hiệu ứng ngẫu nhiên từ danh sách
+                const randomAnimation = animationClasses[Math.floor(Math.random() * animationClasses.length)];
+                
+                // Thêm các lớp CSS để kích hoạt hiệu ứng
+                entry.target.classList.add(randomAnimation, 'is-visible');
+
+                // Dừng theo dõi phần tử sau khi đã kích hoạt hiệu ứng
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1 // Kích hoạt khi 10% phần tử hiển thị
+    });
+
+    elementsToAnimate.forEach(el => {
+        // Thêm lớp ban đầu để ẩn phần tử và chuẩn bị cho hiệu ứng
+        el.classList.add('animate-on-scroll');
+        observer.observe(el);
+    });
+}
+
+/**
+ * Nút "Xem thêm" cho bộ lọc danh mục
+ */
+const showMoreCatsBtn = document.getElementById('show-more-cats');
+if (showMoreCatsBtn) {
+    showMoreCatsBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const extraCats = document.querySelectorAll('#category-filter-list .extra-category');
+        extraCats.forEach(cat => {
+            cat.classList.toggle('d-none');
+        });
+
+        if (this.innerHTML.includes('Xem thêm')) {
+            this.innerHTML = 'Thu gọn <i class="fa fa-angle-up"></i>';
+        } else {
+            this.innerHTML = 'Xem thêm <i class="fa fa-angle-down"></i>';
+        }
+    });
+}

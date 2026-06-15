@@ -1,11 +1,28 @@
 <?php $pageTitle = 'Cửa hàng — Basic Shop'; ?>
+<?php require_once __DIR__ . '/inc/header.php'; ?>
+
+<?php
+// Helper to build URLs for filters, preserving existing query parameters
+$buildFilterUrl = function($key, $value) {
+    $params = $_GET;
+    unset($params['p']); // Reset page to 1 when changing a filter
+
+    // 'all' is the default for gender, so we can remove it from URL
+    if ($value === null || $value === 'all') {
+        unset($params[$key]);
+    } else {
+        $params[$key] = $value;
+    }
+    return BASE_URL . 'index.php?' . http_build_query($params);
+};
+?>
 
 <div class="container py-5">
     <div class="row">
 
         <!-- ===== SIDEBAR ===== -->
         <div class="col-lg-3">
-            <h5 class="mb-4">Danh mục</h5>
+            <h5 class="mb-4">Bộ lọc</h5>
 
             <!-- Lọc giới tính -->
             <p class="fw-bold mb-2">
@@ -17,11 +34,41 @@
                 foreach ($genders as $val => $label):
                     $active = ($filter['gender'] === $val) ? 'text-success fw-bold' : 'text-muted';
                 ?>
-                    <a href="<?= BASE_URL ?>index.php?page=shop&gender=<?= $val ?>&sort=<?= $filter['sort'] ?>"
+                    <a href="<?= $buildFilterUrl('gender', $val) ?>"
                        class="text-decoration-none <?= $active ?>">
                         <?= $label ?>
                     </a>
                 <?php endforeach; ?>
+            </div>
+
+            <!-- Lọc Danh mục sản phẩm -->
+            <p class="fw-bold mb-2">
+                Danh mục <i class="fa fa-chevron-down float-end text-muted"></i>
+            </p>
+            <div class="d-flex flex-column gap-1 mb-4" id="category-filter-list">
+                <a href="<?= $buildFilterUrl('category_id', null) ?>"
+                   class="text-decoration-none <?= empty($filter['category_id']) ? 'text-success fw-bold' : 'text-muted' ?>">
+                    Tất cả danh mục
+                </a>
+                <?php
+                $max_visible_cats = 7;
+                $cat_count = 0;
+                foreach ($sidebarCategories as $cat):
+                    $cat_count++;
+                    $active = ($filter['category_id'] == $cat['id']) ? 'text-success fw-bold' : 'text-muted';
+                    $hidden_class = ($cat_count > $max_visible_cats) ? 'd-none extra-category' : '';
+                ?>
+                    <a href="<?= $buildFilterUrl('category_id', $cat['id']) ?>" class="text-decoration-none <?= $active ?> <?= $hidden_class ?>">
+                        <?= htmlspecialchars($cat['name']) ?>
+                        <span class="badge bg-light text-dark rounded-pill float-end"><?= $cat['product_count'] ?></span>
+                    </a>
+                <?php endforeach; ?>
+
+                <?php if (count($sidebarCategories) > $max_visible_cats): ?>
+                    <a href="javascript:void(0);" id="show-more-cats" class="text-decoration-none text-success small mt-1">
+                        Xem thêm <i class="fa fa-angle-down"></i>
+                    </a>
+                <?php endif; ?>
             </div>
 
             <!-- Lọc thương hiệu -->
@@ -29,14 +76,14 @@
                 Thương hiệu <i class="fa fa-chevron-down float-end text-muted"></i>
             </p>
             <div class="d-flex flex-column gap-1 mb-4">
-                <a href="<?= BASE_URL ?>index.php?page=shop&gender=<?= $filter['gender'] ?>"
+                <a href="<?= $buildFilterUrl('brand_id', null) ?>"
                    class="text-decoration-none <?= empty($filter['brand_id']) ? 'text-success fw-bold' : 'text-muted' ?>">
                     Tất cả thương hiệu
                 </a>
                 <?php foreach ($brands as $b):
                     $active = ($filter['brand_id'] == $b->getId()) ? 'text-success fw-bold' : 'text-muted';
                 ?>
-                    <a href="<?= BASE_URL ?>index.php?page=shop&gender=<?= $filter['gender'] ?>&brand_id=<?= $b->getId() ?>"
+                    <a href="<?= $buildFilterUrl('brand_id', $b->getId()) ?>"
                        class="text-decoration-none <?= $active ?>">
                         <?= htmlspecialchars($b->getName()) ?>
                     </a>
@@ -45,12 +92,18 @@
 
             <!-- Lọc giảm giá -->
             <p class="fw-bold mb-2">
-                Giảm giá <i class="fa fa-chevron-down float-end text-muted"></i>
+                Khuyến mãi <i class="fa fa-chevron-down float-end text-muted"></i>
             </p>
-            <a href="<?= BASE_URL ?>index.php?page=shop&gender=<?= $filter['gender'] ?>&on_sale=1"
-               class="text-decoration-none <?= !empty($filter['on_sale']) ? 'text-success fw-bold' : 'text-muted' ?>">
-                Chỉ xem hàng giảm giá
-            </a>
+            <div class="d-flex flex-column gap-1">
+                <a href="<?= $buildFilterUrl('on_sale', null) ?>"
+                   class="text-decoration-none <?= empty($filter['on_sale']) ? 'text-success fw-bold' : 'text-muted' ?>">
+                    Tất cả
+                </a>
+                <a href="<?= $buildFilterUrl('on_sale', 1) ?>"
+                   class="text-decoration-none <?= !empty($filter['on_sale']) ? 'text-success fw-bold' : 'text-muted' ?>">
+                    Đang giảm giá
+                </a>
+            </div>
         </div>
 
         <!-- ===== SẢN PHẨM ===== -->
@@ -62,7 +115,7 @@
                     <?php foreach (['all'=>'Tất cả','male'=>'Của nam','female'=>'Của nữ'] as $val=>$label): ?>
                         <li class="nav-item">
                             <a class="nav-link <?= $filter['gender']===$val ? 'active bg-success':'text-dark border' ?>"
-                               href="<?= BASE_URL ?>index.php?page=shop&gender=<?= $val ?>&sort=<?= $filter['sort'] ?>">
+                               href="<?= $buildFilterUrl('gender', $val) ?>">
                                 <?= $label ?>
                             </a>
                         </li>
@@ -80,7 +133,7 @@
                         'rating'     => 'Đánh giá cao',
                     ];
                     foreach ($sorts as $val => $label):
-                        $url = BASE_URL.'index.php?page=shop&gender='.$filter['gender'].'&sort='.$val;
+                        $url = $buildFilterUrl('sort', $val);
                     ?>
                         <option value="<?= $url ?>" <?= $filter['sort']===$val?'selected':'' ?>>
                             <?= $label ?>
@@ -226,3 +279,5 @@
         </div>
     </div>
 </div>
+
+<?php require_once __DIR__ . '/inc/footer.php'; ?>

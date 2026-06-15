@@ -343,10 +343,17 @@ class AdminController extends Controller {
                 $uploadDir = ROOT_PATH . '/assets/img/';
                 if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-                $fileName = time() . '_' . basename($_FILES['image']['name']);
+                // Cải tiến: Làm sạch tên file để an toàn và thân thiện với URL hơn
+                $originalName = $_FILES['image']['name'];
+                // Lấy phần mở rộng file (extension) và chuyển thành chữ thường
+                $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+                // Tạo tên file an toàn: loại bỏ ký tự đặc biệt, thay bằng dấu gạch dưới
+                $safeBaseName = preg_replace('/[^A-Za-z0-9_\-]/', '_', pathinfo($originalName, PATHINFO_FILENAME));
+                // Kết hợp lại thành tên file cuối cùng, đảm bảo có phần mở rộng
+                $fileName = time() . '_' . $safeBaseName . '.' . $extension;
                 $targetFilePath = $uploadDir . $fileName;
-                
-                if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFilePath)) {
+
+                if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFilePath)) { // Lỗi "Permission Denied" xảy ra ở đây do quyền ghi file trên server
                     if ($isEdit && !empty($product['image']) && file_exists($uploadDir . $product['image'])) {
                         @unlink($uploadDir . $product['image']);
                     }

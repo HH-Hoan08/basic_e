@@ -21,20 +21,22 @@ class ShopController extends Controller {
             'page'        => (int)($_GET['p'] ?? 1),
         ];
 
-        $products   = $this->productModel->getProducts($filter);
-        $total      = $this->productModel->countProducts($filter);
-        $categories = $this->productModel->getParentCategories();
-        $brands     = $this->productModel->getBrands();
-        $totalPages = (int)ceil($total / 9);
+        $products          = $this->productModel->getProducts($filter);
+        $total             = $this->productModel->countProducts($filter);
+        $categories        = $this->productModel->getParentCategories(); // For header nav
+        $sidebarCategories = $this->productModel->getAvailableCategories($filter); // For sidebar filter
+        $brands            = $this->productModel->getBrands();
+        $totalPages        = (int)ceil($total / 9);
 
         $this->view('shop', [
-            'pageTitle'  => 'Basic Shop - Cửa Hàng',
-            'filter'     => $filter,
-            'products'   => $products,
-            'total'      => $total,
-            'categories' => $categories,
-            'brands'     => $brands,
-            'totalPages' => $totalPages
+            'pageTitle'         => 'Basic Shop - Cửa Hàng',
+            'filter'            => $filter,
+            'products'          => $products,
+            'total'             => $total,
+            'categories'        => $categories, // For header
+            'sidebarCategories' => $sidebarCategories, // For sidebar
+            'brands'            => $brands,
+            'totalPages'        => $totalPages
         ]);
     }
 
