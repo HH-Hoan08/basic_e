@@ -66,7 +66,6 @@ class AdminController extends Controller {
             case 'delete_voucher':
                 $this->deleteVoucher();
                 break;
-            // Các route khác như products, vouchers... bạn sẽ thêm vào đây
             default:
                 $this->dashboard();
                 break;
@@ -106,6 +105,12 @@ class AdminController extends Controller {
 
             try {
                 $this->adminModel->updateOrderStatus($orderId, $newStatus);
+                
+                // Gửi email hóa đơn nếu trạng thái chuyển sang 'confirmed' (Xác nhận)
+                if ($newStatus === 'confirmed') {
+                    $this->sendInvoiceEmail($orderId);
+                }
+
                 $_SESSION['admin_message'] = ['type' => 'success', 'text' => 'Cập nhật trạng thái đơn hàng #' . $orderId . ' thành công!'];
             } catch (Exception $e) {
                 $_SESSION['admin_message'] = ['type' => 'danger', 'text' => 'Lỗi: ' . $e->getMessage()];
@@ -143,6 +148,12 @@ class AdminController extends Controller {
             $newStatus = $_POST['status'];
             try {
                 $this->adminModel->updateOrderStatus($orderId, $newStatus);
+                
+                // Gửi email hóa đơn nếu trạng thái chuyển sang 'confirmed' (Xác nhận)
+                if ($newStatus === 'confirmed') {
+                    $this->sendInvoiceEmail($orderId);
+                }
+
                 $_SESSION['admin_message'] = ['type' => 'success', 'text' => 'Cập nhật trạng thái đơn hàng #' . $orderId . ' thành công!'];
             } catch (Exception $e) {
                 $_SESSION['admin_message'] = ['type' => 'danger', 'text' => 'Lỗi: ' . $e->getMessage()];
@@ -351,21 +362,18 @@ class AdminController extends Controller {
 
                 // Cải tiến: Làm sạch tên file để an toàn và thân thiện với URL hơn
                 $originalName = $_FILES['image']['name'];
-                // Lấy phần mở rộng file (extension) và chuyển thành chữ thường
                 $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-                // Tạo tên file an toàn: loại bỏ ký tự đặc biệt, thay bằng dấu gạch dưới
                 $safeBaseName = preg_replace('/[^A-Za-z0-9_\-]/', '_', pathinfo($originalName, PATHINFO_FILENAME));
-                // Kết hợp lại thành tên file cuối cùng, đảm bảo có phần mở rộng
                 $fileName = time() . '_' . $safeBaseName . '.' . $extension;
                 $targetFilePath = $uploadDir . $fileName;
 
-                if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFilePath)) { // Lỗi "Permission Denied" xảy ra ở đây do quyền ghi file trên server
+                if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFilePath)) { 
                     if ($isEdit && !empty($product['image']) && file_exists($uploadDir . $product['image'])) {
                         @unlink($uploadDir . $product['image']);
                     }
                     $data['image'] = $fileName;
                 } else {
-                    $message = ['type' => 'danger', 'text' => 'Có lỗi khi tải ảnh lên.'];
+                    $message = ['type' => 'danger', 'text' => 'Có lỗi khi tải ảnh lên. Lỗi quyền ghi (Permission Denied).'];
                 }
             }
 
@@ -416,7 +424,7 @@ class AdminController extends Controller {
             $token = substr(str_shuffle("0123456789"), 0, 6); // Tạo OTP 6 số
             $userAuthModel->createPasswordResetToken($email, $token);
             
-            // Nạp MailService
+            // Nạp MailService (Đảm bảo folder là 'services' hoặc 'service' tùy cấu trúc của bạn)
             include_once __DIR__ . '/../services/MailService.php';
             $mailService = new MailService();
             $sent = $mailService->sendPasswordResetEmail($email, $token);
@@ -479,5 +487,64 @@ class AdminController extends Controller {
         extract($data);
         $viewPath = __DIR__ . "/../views/admin/{$viewName}.php";
         include __DIR__ . '/../views/admin/layout.php';
+    }
+
+    // ==========================================
+    // GỬI HÓA ĐƠN QUA EMAIL (KHI XÁC NHẬN ĐƠN)
+    // ==========================================
+    private function sendInvoiceEmail(int $orderId) {
+        include_once __DIR__ . '/../models/OrderModel.php';
+        $orderModel = new OrderModel();
+        $order = $orderModel->getOrderDetails($orderId);
+
+        if (!$order || empty($order['email'])) {
+            return false;
+        }
+
+        // Tạo nội dung HTML cho hóa đơn
+        $subject = "Xác nhận đơn hàng #" . $order['id'] . " - Basic Shop";
+        
+        $body = "<div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>";
+        $body .= "<h2 style='color: #28a745;'>Cảm ơn bạn đã đặt hàng tại Basic Shop!</h2>";
+        $body .= "<p>Xin chào <strong>" . htmlspecialchars($order['fullname']) . "</strong>,</p>";
+        $body .= "<p>Đơn hàng <strong>#" . $order['id'] . "</strong> của bạn đã được chúng tôi xác nhận và đang trong quá trình chuẩn bị.</p>";
+        $body .= "<h3 style='border-bottom: 2px solid #28a745; padding-bottom: 5px;'>Chi tiết đơn hàng:</h3>";
+        $body .= "<table border='1' cellpadding='10' cellspacing='0' style='border-collapse: collapse; width: 100%; border: 1px solid #ddd;'>";
+        $body .= "<tr style='background-color: #f8f9fa;'><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr>";
+        
+        foreach ($order['items'] as $item) {
+            $itemTotal = $item['quantity'] * $item['unit_price'];
+            $body .= "<tr>";
+            $body .= "<td>" . htmlspecialchars($item['product_name']) . "</td>";
+            $body .= "<td align='center'>" . $item['quantity'] . "</td>";
+            $body .= "<td align='right'>" . number_format($item['unit_price'], 0, ',', '.') . " đ</td>";
+            $body .= "<td align='right'>" . number_format($itemTotal, 0, ',', '.') . " đ</td>";
+            $body .= "</tr>";
+        }
+        
+        $body .= "<tr><td colspan='3' align='right'><strong>Tạm tính:</strong></td><td align='right'>" . number_format($order['total_price'] + $order['discount_amount'], 0, ',', '.') . " đ</td></tr>";
+        if ($order['discount_amount'] > 0) {
+            $body .= "<tr><td colspan='3' align='right'><strong>Giảm giá:</strong></td><td align='right'>-" . number_format($order['discount_amount'], 0, ',', '.') . " đ</td></tr>";
+        }
+        $body .= "<tr><td colspan='3' align='right'><strong>Tổng thanh toán:</strong></td><td align='right'><strong style='color: #dc3545; font-size: 1.2em;'>" . number_format($order['total_price'], 0, ',', '.') . " đ</strong></td></tr>";
+        $body .= "</table>";
+        $body .= "<p>Chúng tôi sẽ liên hệ lại với bạn trước khi giao hàng.</p>";
+        $body .= "<p>Trân trọng,<br><strong>Đội ngũ Basic Shop</strong></p>";
+        $body .= "</div>";
+
+        // Tích hợp MailService đã được cập nhật thêm phương thức sendHtmlEmail()
+        // Lưu ý: Nếu thư mục của bạn tên là 'service' thì đổi dòng dưới thành '/../service/MailService.php'
+        include_once __DIR__ . '/../services/MailService.php';
+        
+        if (class_exists('MailService')) {
+            $mailService = new MailService();
+            // Hàm này bây giờ sẽ hoạt động trơn tru
+            if (method_exists($mailService, 'sendHtmlEmail')) {
+                return $mailService->sendHtmlEmail($order['email'], $subject, $body);
+            }
+        }
+        
+        // Đoạn code dưới đây (fallback thủ công) sẽ tự động bị bỏ qua vì MailService đã xử lý thành công
+        return false; 
     }
 }

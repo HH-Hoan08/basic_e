@@ -1,9 +1,9 @@
 <?php
-// Import PHPMailer classes into the global namespace
+// Import các class của PHPMailer vào không gian tên chung
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Load Composer's autoloader
+// Tải autoloader của Composer
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 class MailService {
@@ -15,26 +15,31 @@ class MailService {
     }
 
     private function configure() {
-        // Server settings - BẠN CẦN THAY ĐỔI CÁC THÔNG TIN NÀY
-        // Bạn nên lưu các thông tin này trong file config, không nên hardcode
+        // Cài đặt Server SMTP
         $this->mailer->isSMTP();
-        $this->mailer->Host       = 'smtp.gmail.com'; // VD: smtp.gmail.com
+        $this->mailer->Host       = 'smtp.gmail.com'; 
         $this->mailer->SMTPAuth   = true;
-        $this->mailer->Username   = 'basicadmin4@gmail.com'; // Email của bạn
-        $this->mailer->Password   = 'bgzc spxd tcjq qwom';                                                                                                                                                                                                                                                            // Mật khẩu ứng dụng Gmail
+        
+        // THAY ĐỔI CÁC THÔNG TIN DƯỚI ĐÂY BẰNG THÔNG TIN CỦA BẠN
+        $this->mailer->Username   = 'basicadmin4@gmail.com'; 
+        // 🚨 CHÚ Ý: Điền mật khẩu ứng dụng MỚI của bạn vào đây. KHÔNG dùng lại mật khẩu cũ đã lộ.
+        $this->mailer->Password   = 'bgzc spxd tcjq qwom'; 
+        
         $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $this->mailer->Port       = 465;
         $this->mailer->CharSet    = 'UTF-8';
 
-        // Recipients
+        // Người gửi
         $this->mailer->setFrom('no-reply@basicshop.com', 'Basic Shop');
     }
 
+    // Hàm 1: Gửi email đặt lại mật khẩu (OTP)
     public function sendPasswordResetEmail(string $recipientEmail, string $token): bool {
         try {
+            $this->mailer->clearAllRecipients(); // Xóa người nhận cũ để tránh gửi nhầm
             $this->mailer->addAddress($recipientEmail);
 
-            // Content
+            // Nội dung email
             $this->mailer->isHTML(true);
             $this->mailer->Subject = 'Yêu cầu đặt lại mật khẩu cho Basic Shop';
             $this->mailer->Body    = "
@@ -50,8 +55,30 @@ class MailService {
             $this->mailer->send();
             return true;
         } catch (Exception $e) {
-            // Ghi log lỗi để debug, không hiển thị cho người dùng
-            error_log("Mailer Error: {$this->mailer->ErrorInfo}");
+            // Ghi log lỗi để debug
+            error_log("Lỗi Gửi Mail (Reset Password): {$this->mailer->ErrorInfo}");
+            return false;
+        }
+    }
+
+    // Hàm 2 (ĐƯỢC THÊM MỚI): Hàm chung để gửi các Email định dạng HTML (như Hóa đơn)
+    public function sendHtmlEmail(string $recipientEmail, string $subject, string $body): bool {
+        try {
+            $this->mailer->clearAllRecipients(); // Xóa người nhận cũ
+            $this->mailer->addAddress($recipientEmail);
+
+            $this->mailer->isHTML(true);
+            $this->mailer->Subject = $subject;
+            $this->mailer->Body    = $body;
+            
+            // Loại bỏ thẻ HTML cho các trình duyệt email không hỗ trợ HTML (văn bản thuần)
+            $this->mailer->AltBody = strip_tags(str_replace(['<br>', '<br/>', '</p>'], "\n", $body));
+
+            $this->mailer->send();
+            return true;
+        } catch (Exception $e) {
+            // Ghi log lỗi
+            error_log("Lỗi Gửi Mail (HTML Email): {$this->mailer->ErrorInfo}");
             return false;
         }
     }
