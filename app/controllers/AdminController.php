@@ -508,6 +508,7 @@ class AdminController extends Controller {
         $body .= "<h2 style='color: #28a745;'>Cảm ơn bạn đã đặt hàng tại Basic Shop!</h2>";
         $body .= "<p>Xin chào <strong>" . htmlspecialchars($order['fullname']) . "</strong>,</p>";
         $body .= "<p>Đơn hàng <strong>#" . $order['id'] . "</strong> của bạn đã được chúng tôi xác nhận và đang trong quá trình chuẩn bị.</p>";
+        $body .= "<p><strong>Địa chỉ giao hàng:</strong> " . htmlspecialchars($order['address'] ?? 'Không có thông tin') . "</p>";
         $body .= "<h3 style='border-bottom: 2px solid #28a745; padding-bottom: 5px;'>Chi tiết đơn hàng:</h3>";
         $body .= "<table border='1' cellpadding='10' cellspacing='0' style='border-collapse: collapse; width: 100%; border: 1px solid #ddd;'>";
         $body .= "<tr style='background-color: #f8f9fa;'><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr>";
