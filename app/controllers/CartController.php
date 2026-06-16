@@ -198,6 +198,13 @@ class CartController extends Controller {
             exit();
         }
 
+        // Kiểm tra xem người dùng đã cập nhật địa chỉ nhà chưa
+        if (empty(trim($currentUser['address'] ?? ''))) {
+            $_SESSION['profile_error'] = "Vui lòng cập nhật địa chỉ giao hàng của bạn trước khi thanh toán.";
+            header("Location: " . BASE_URL . "index.php?page=profile#info");
+            exit();
+        }
+
         try {
             // Lấy thông tin voucher từ session để truyền vào model
             $voucherInfo = null;
