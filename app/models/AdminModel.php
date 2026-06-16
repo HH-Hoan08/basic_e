@@ -264,42 +264,84 @@ class AdminModel {
         }
 
         $sql = "UPDATE products SET 
-                    name = :name, 
-                    description = :description, 
-                    price = :price, 
-                    sale_price = :sale_price, 
-                    stock = :stock, 
-                    category_id = :category_id, 
-                    brand_id = :brand_id, 
-                    gender = :gender, 
-                    is_active = :is_active, 
-                    is_featured = :is_featured";
-        
-        if (isset($data['slug'])) $sql .= ", slug = :slug";
-        if (!empty($data['image'])) $sql .= ", image = :image";
-        
-        $sql .= " WHERE id = :id";
-        $data['id'] = $id;
+            name = :name, 
+            description = :description, 
+            price = :price, 
+            sale_price = :sale_price, 
+            stock = :stock, 
+            category_id = :category_id, 
+            brand_id = :brand_id, 
+            gender = :gender, 
+            is_active = :is_active, 
+            is_featured = :is_featured";
 
+        // Tạo một mảng params CHỈ chứa các tham số mặc định trên
+        $params = [
+            ':name'        => $data['name'],
+            ':description' => $data['description'],
+            ':price'       => $data['price'],
+            ':sale_price'  => $data['sale_price'],
+            ':stock'       => $data['stock'],
+            ':category_id' => $data['category_id'],
+            ':brand_id'    => $data['brand_id'],
+            ':gender'      => $data['gender'],
+            ':is_active'   => $data['is_active'],
+            ':is_featured' => $data['is_featured']
+        ];
+
+        // Xử lý các trường hợp tùy chọn
+        if (isset($data['slug'])) {
+            $sql .= ", slug = :slug";
+            $params[':slug'] = $data['slug']; // Chỉ thêm vào params khi sql có update slug
+        }
+
+        if (!empty($data['image'])) {
+            $sql .= ", image = :image";
+            $params[':image'] = $data['image']; // Chỉ thêm vào params khi sql có update image
+        }
+
+        // Xử lý ID
+        $sql .= " WHERE id = :id";
+        $params[':id'] = $id;
+
+        // Thực thi câu lệnh với mảng params đã được lọc sạch
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute($data);
+        return $stmt->execute($params);
     }
 
     public function deleteProduct(int $id): bool {
-        $product = $this->getProductById($id);
-        
-        $sql = "DELETE FROM products WHERE id = ?";
-        $stmt = $this->db->prepare($sql);
-        $success = $stmt->execute([$id]);
+    // 1. KIỂM TRA RÀNG BUỘC: Xem sản phẩm có nằm trong đơn hàng nào không
+    $checkSql = "SELECT DISTINCT order_id FROM order_items WHERE product_id = ?";
+    $checkStmt = $this->db->prepare($checkSql);
+    $checkStmt->execute([$id]); // Dùng dấu ? thì truyền mảng [$id]
+    
+    // Lấy ra danh sách các mã đơn hàng
+    $relatedOrders = $checkStmt->fetchAll(PDO::FETCH_COLUMN);
 
-        if ($success && $product && !empty($product['image'])) {
-            // Sử dụng ROOT_PATH đã được định nghĩa ở file index.php chính
-            $imagePath = ROOT_PATH . '/assets/img/' . $product['image'];
-            if (file_exists($imagePath)) {
-                @unlink($imagePath);
-            }
+    if (count($relatedOrders) > 0) {
+        // Nối các mã đơn hàng bằng dấu phẩy và ném lỗi ra ngoài
+        $orderList = implode(", ", $relatedOrders);
+        throw new Exception("Không thể xóa! Sản phẩm này đang nằm trong (các) đơn hàng mã: " . $orderList);
+    }
+
+    // 2. LẤY THÔNG TIN SẢN PHẨM: Để chuẩn bị cho việc xóa file ảnh vật lý
+    $product = $this->getProductById($id);
+    
+    // 3. THỰC HIỆN XÓA: Xóa sản phẩm khỏi database
+    $sql = "DELETE FROM products WHERE id = ?";
+    $stmt = $this->db->prepare($sql);
+    $success = $stmt->execute([$id]);
+
+    // 4. XÓA FILE ẢNH VẬT LÝ: Nếu xóa database thành công thì mới xóa ảnh ở server
+    if ($success && $product && !empty($product['image'])) {
+        // Sử dụng ROOT_PATH đã được định nghĩa ở file index.php chính
+        $imagePath = ROOT_PATH . '/assets/img/' . $product['image'];
+        if (file_exists($imagePath)) {
+            @unlink($imagePath);
         }
-        return $success;
+    }
+    
+    return $success;
     }
 
     // ==========================================
