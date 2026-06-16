@@ -63,6 +63,9 @@ class AdminController extends Controller {
             case 'send_email':
                 $this->sendEmail();
                 break;
+            case 'delete_voucher':
+                $this->deleteVoucher();
+                break;
             // Các route khác như products, vouchers... bạn sẽ thêm vào đây
             default:
                 $this->dashboard();
