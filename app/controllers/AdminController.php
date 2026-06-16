@@ -66,6 +66,16 @@ class AdminController extends Controller {
             case 'delete_voucher':
                 $this->deleteVoucher();
                 break;
+            case 'categories':
+                $this->categories();
+                break;
+            case 'add_category':
+            case 'edit_category':
+                $this->categoryForm();
+                break;
+            case 'delete_category':
+                $this->deleteCategory();
+                break;
             default:
                 $this->dashboard();
                 break;
@@ -478,6 +488,74 @@ class AdminController extends Controller {
         }
 
         $this->renderAdminView('send_email', ['message' => $message]);
+    }
+
+    // ==========================================
+    // 9. QUẢN LÝ DANH MỤC (CRUD)
+    // ==========================================
+    private function categories() {
+        $message = null;
+        if (isset($_SESSION['admin_message'])) {
+            $message = $_SESSION['admin_message'];
+            unset($_SESSION['admin_message']);
+        }
+
+        $categories = $this->adminModel->getAllCategories();
+        $this->renderAdminView('categories', ['categories' => $categories, 'message' => $message]);
+    }
+
+    private function categoryForm() {
+        $categoryId = (int)($_GET['id'] ?? 0);
+        $isEdit = $categoryId > 0;
+        $category = null;
+        $message = null;
+
+        if ($isEdit) {
+            $category = $this->adminModel->getCategoryById($categoryId);
+            if (!$category) {
+                $_SESSION['admin_message'] = ['type' => 'danger', 'text' => 'Danh mục không tồn tại.'];
+                header("Location: " . BASE_URL . "index.php?page=admin&action=categories");
+                exit();
+            }
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_category'])) {
+            $data = [
+                'name' => trim($_POST['name']),
+                'description' => trim($_POST['description'] ?? ''),
+                'parent_id' => !empty($_POST['parent_id']) ? (int)$_POST['parent_id'] : null,
+                'is_active' => isset($_POST['is_active']) ? 1 : 0,
+                'sort_order' => (int)($_POST['sort_order'] ?? 0)
+            ];
+
+            $actionText = $isEdit ? 'Cập nhật' : 'Thêm mới';
+            $success = $isEdit ? $this->adminModel->updateCategory($categoryId, $data) : $this->adminModel->createCategory($data);
+
+            if ($success) {
+                $_SESSION['admin_message'] = ['type' => 'success', 'text' => $actionText . ' danh mục thành công!'];
+                header("Location: " . BASE_URL . "index.php?page=admin&action=categories");
+                exit();
+            } else {
+                $message = ['type' => 'danger', 'text' => $actionText . ' danh mục thất bại.'];
+            }
+        }
+
+        $allCategories = $this->adminModel->getAllCategories(); // Dùng cho dropdown parent_id
+        $this->renderAdminView('category_form', ['category' => $category, 'allCategories' => $allCategories, 'message' => $message]);
+    }
+
+    private function deleteCategory() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category_id'])) {
+            $categoryId = (int)$_POST['category_id'];
+            try {
+                $success = $this->adminModel->deleteCategory($categoryId);
+                $_SESSION['admin_message'] = $success ? ['type' => 'success', 'text' => 'Đã xóa danh mục thành công.'] : ['type' => 'danger', 'text' => 'Xóa danh mục thất bại.'];
+            } catch (Exception $e) {
+                $_SESSION['admin_message'] = ['type' => 'danger', 'text' => $e->getMessage()];
+            }
+        }
+        header("Location: " . BASE_URL . "index.php?page=admin&action=categories");
+        exit();
     }
 
     // ==========================================

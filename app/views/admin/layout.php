@@ -63,6 +63,9 @@
                 <a href="<?= BASE_URL ?>index.php?page=admin&action=orders" class="<?= ($_GET['action'] ?? '') === 'orders' ? 'active' : '' ?>">
                     <i class="fas fa-shopping-cart me-2"></i> Quản lý Đơn hàng
                 </a>
+                <a href="<?= BASE_URL ?>index.php?page=admin&action=categories" class="<?= in_array(($_GET['action'] ?? ''), ['categories', 'add_category', 'edit_category']) ? 'active' : '' ?>">
+                    <i class="fas fa-list me-2"></i> Quản lý Danh mục
+                </a>
                 <a href="<?= BASE_URL ?>index.php?page=admin&action=products" class="<?= ($_GET['action'] ?? '') === 'products' ? 'active' : '' ?>">
                     <i class="fas fa-box me-2"></i> Quản lý Sản phẩm
                 </a>

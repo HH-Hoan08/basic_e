@@ -552,4 +552,98 @@ class AdminModel {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$recipient, $subject, $body, $adminId]);
     }
+
+    // ==========================================
+    // 11. QUẢN LÝ DANH MỤC (CRUD)
+    // ==========================================
+    public function getAllCategories(): array {
+        $sql = "SELECT c.*, p.name as parent_name 
+                FROM categories c 
+                LEFT JOIN categories p ON c.parent_id = p.id 
+                ORDER BY c.sort_order ASC, c.id DESC";
+        try {
+            return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    public function getCategoryById(int $id): ?array {
+        $sql = "SELECT * FROM categories WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id]);
+        $category = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $category ?: null;
+    }
+
+    private function generateCategorySlug(string $name, ?int $excludeId = null): string {
+        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+        $originalSlug = $slug;
+        $counter = 1;
+
+        while (true) {
+            $sql = "SELECT id FROM categories WHERE slug = ? AND id != ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$slug, $excludeId ?? 0]);
+            if (!$stmt->fetch()) {
+                break;
+            }
+            $slug = $originalSlug . '-' . $counter++;
+        }
+        return $slug;
+    }
+
+    public function createCategory(array $data): bool {
+        $data['slug'] = $this->generateCategorySlug($data['name']);
+        
+        $sql = "INSERT INTO categories (name, slug, description, parent_id, is_active, sort_order) 
+                VALUES (:name, :slug, :description, :parent_id, :is_active, :sort_order)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($data);
+    }
+
+    public function updateCategory(int $id, array $data): bool {
+        $currentCategory = $this->getCategoryById($id);
+        if ($currentCategory['name'] !== $data['name']) {
+            $data['slug'] = $this->generateCategorySlug($data['name'], $id);
+        } else {
+            $data['slug'] = $currentCategory['slug'];
+        }
+
+        $data['id'] = $id;
+
+        $sql = "UPDATE categories SET 
+                    name = :name, 
+                    slug = :slug,
+                    description = :description, 
+                    parent_id = :parent_id, 
+                    is_active = :is_active, 
+                    sort_order = :sort_order 
+                WHERE id = :id";
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($data);
+    }
+
+    public function deleteCategory(int $id): bool {
+        // Kiểm tra xem có sản phẩm nào thuộc danh mục này không
+        $checkProductSql = "SELECT id FROM products WHERE category_id = ? LIMIT 1";
+        $checkProductStmt = $this->db->prepare($checkProductSql);
+        $checkProductStmt->execute([$id]);
+        if ($checkProductStmt->fetch()) {
+            throw new Exception("Không thể xóa danh mục vì đang có sản phẩm thuộc danh mục này.");
+        }
+
+        // Kiểm tra xem có danh mục con không
+        $checkChildSql = "SELECT id FROM categories WHERE parent_id = ? LIMIT 1";
+        $checkChildStmt = $this->db->prepare($checkChildSql);
+        $checkChildStmt->execute([$id]);
+        if ($checkChildStmt->fetch()) {
+            throw new Exception("Không thể xóa danh mục vì đang chứa danh mục con.");
+        }
+
+        $sql = "DELETE FROM categories WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$id]);
+    }
 }
