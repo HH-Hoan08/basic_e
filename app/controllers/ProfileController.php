@@ -106,6 +106,25 @@ class ProfileController extends Controller {
             exit();
         }
 
+        // [MỚI] Xử lý khách hàng bấm "Đã nhận được hàng"
+        if (isset($_GET['action']) && $_GET['action'] === 'receive_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $orderId = (int)($_POST['order_id'] ?? 0);
+            $orderModel = $this->model('OrderModel');
+            
+            try {
+                if ($orderModel->markAsReceived($orderId, $userInfo['id'])) {
+                    $_SESSION['profile_success'] = "Cảm ơn bạn đã xác nhận nhận hàng! Đơn hàng #{$orderId} đã được giao thành công.";
+                } else {
+                    $_SESSION['profile_error'] = "Không thể xác nhận đơn hàng #{$orderId}.";
+                }
+            } catch (Exception $e) {
+                $_SESSION['profile_error'] = "Lỗi: " . $e->getMessage();
+            }
+
+            header("Location: " . BASE_URL . "index.php?page=profile#orders");
+            exit();
+        }
+
         // lấy email admin gửi cho user
         $emailModel = $this->model('AdminModel');
         $userEmails = [];

@@ -214,6 +214,11 @@ if (!$isLoggedIn) {
                                                         <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                                                         <button type="submit" class="btn btn-sm btn-outline-danger">Hủy đơn</button>
                                                     </form>
+                                                <?php elseif ($currentStatus === 'shipping' || $currentStatus === 'confirmed'): ?>
+                                                    <form action="index.php?page=profile&action=receive_order" method="POST" class="d-inline-block m-0 p-0" onsubmit="return confirm('Bạn xác nhận đã nhận được hàng?');">
+                                                        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                        <button type="submit" class="btn btn-sm btn-success"><i class="fa fa-check"></i> Đã nhận hàng</button>
+                                                    </form>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>

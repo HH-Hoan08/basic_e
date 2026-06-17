@@ -198,4 +198,33 @@ class OrderModel {
             throw $e;
         }
     }
+
+    /**
+     * Khách hàng xác nhận đã nhận hàng (Chuyển trạng thái thành 'delivered')
+     * Lúc này hệ thống mới tính là giao thành công (cộng doanh thu, xếp hạng).
+     * @param int $orderId ID của đơn hàng
+     * @param int $userId ID của người dùng để xác thực quyền
+     * @return bool
+     * @throws Exception
+     */
+    public function markAsReceived(int $orderId, int $userId): bool {
+        $sqlCheck = "SELECT status FROM orders WHERE id = ? AND user_id = ?";
+        $stmtCheck = $this->db->prepare($sqlCheck);
+        $stmtCheck->execute([$orderId, $userId]);
+        $order = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+        if (!$order) {
+            throw new Exception("Đơn hàng không tồn tại hoặc bạn không có quyền.");
+        }
+        if ($order['status'] === 'cancelled') {
+            throw new Exception("Không thể xác nhận nhận hàng cho đơn hàng đã bị hủy.");
+        }
+        if ($order['status'] === 'delivered') {
+            throw new Exception("Đơn hàng này đã được xác nhận giao thành công từ trước.");
+        }
+
+        $sqlUpdate = "UPDATE orders SET status = 'delivered' WHERE id = ?";
+        $stmtUpdate = $this->db->prepare($sqlUpdate);
+        return $stmtUpdate->execute([$orderId]);
+    }
 }
