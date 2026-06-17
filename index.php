@@ -29,8 +29,7 @@ if (isset($_SESSION['user'])) {
 // Định nghĩa các hằng số đường dẫn để sử dụng trong toàn bộ ứng dụng
 define('ROOT_PATH', __DIR__); 
 define('BASE_URL', 'http://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/basic_e/');
-
-// Tải các file core của hệ thống
+// Tải các file core của hệ thống   
 require_once ROOT_PATH . '/app/core/App.php';
 require_once ROOT_PATH . '/app/core/Controller.php';
 

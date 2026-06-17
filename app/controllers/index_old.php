@@ -1,7 +1,6 @@
 <?php
 // File router này đang được sử dụng theo cách cũ.
 // Để các thành phần MVC như CartController và AdminController hoạt động,
-// chúng ta cần nạp file Controller.php gốc của hệ thống.
 include_once __DIR__ . '/../core/Controller.php';
 @session_start();
 
