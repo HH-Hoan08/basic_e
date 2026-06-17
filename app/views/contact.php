@@ -1,4 +1,47 @@
-<?php $pageTitle = 'Liên Hệ — Basic Shop'; ?>
+<?php 
+$pageTitle = 'Liên Hệ — Basic Shop'; 
+
+// Xử lý gửi email liên hệ
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_contact'])) {
+    $name    = trim($_POST['name'] ?? '');
+    $email   = trim($_POST['email'] ?? '');
+    $subject = trim($_POST['subject'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+
+    if (empty($name) || empty($email) || empty($subject) || empty($message)) {
+        $_SESSION['contact_error'] = "Vui lòng điền đầy đủ các trường bắt buộc.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['contact_error'] = "Địa chỉ email không hợp lệ.";
+    } else {
+        require_once __DIR__ . '/../services/MailService.php';
+        $mailService = new MailService();
+        $adminEmail  = 'basicadmin4@gmail.com'; 
+
+        $emailSubject = "Liên hệ mới: " . htmlspecialchars($subject);
+        $emailBody = "
+            <div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+                <h2 style='color: #28a745;'>Có một liên hệ mới từ khách hàng</h2>
+                <p><strong>Họ tên:</strong> " . htmlspecialchars($name) . "</p>
+                <p><strong>Email:</strong> " . htmlspecialchars($email) . "</p>
+                <p><strong>Chủ đề:</strong> " . htmlspecialchars($subject) . "</p>
+                <p><strong>Lời nhắn:</strong><br>" . nl2br(htmlspecialchars($message)) . "</p>
+            </div>
+        ";
+
+        if ($mailService->sendHtmlEmail($adminEmail, $emailSubject, $emailBody)) {
+            $_SESSION['contact_success'] = "Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi trong thời gian sớm nhất.";
+            if (!headers_sent()) {
+                header("Location: " . BASE_URL . "index.php?page=contact");
+            } else {
+                echo "<script>window.location.href='" . BASE_URL . "index.php?page=contact';</script>";
+            }
+            exit();
+        } else {
+            $_SESSION['contact_error'] = "Đã xảy ra lỗi khi gửi email. Vui lòng thử lại sau.";
+        }
+    }
+}
+?>
 <?php require_once __DIR__ . '/inc/header.php'; ?>
 
 <!-- banner -->
@@ -63,7 +106,7 @@
         <?php endif; ?>
 
         <form class="col-md-9 m-auto" method="POST"
-              action="<?= BASE_URL ?>index.php?page=do_contact"
+              action="<?= BASE_URL ?>index.php?page=contact"
               novalidate>
 
             <div class="row">
@@ -119,7 +162,7 @@
 
             <div class="row">
                 <div class="col text-end mt-2">
-                    <button type="submit" class="btn btn-success btn-lg px-3">
+                    <button type="submit" name="submit_contact" class="btn btn-success btn-lg px-3">
                         <i class="fa fa-paper-plane me-2"></i>Gửi đi
                     </button>
                 </div>
