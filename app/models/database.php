@@ -4,20 +4,31 @@ class database{
     private $host_name;
     private $pass;
     private $name_db;
-    private $is_conn = null; //biến dùng để kiểm tra thử đã kết nối vào db chưa
+    private $is_conn = null; 
     
-    public function __construct(){
-        // Ưu tiên đọc từ $_SERVER (nơi Apache đưa biến SetEnv vào), sau đó dự phòng bằng getenv()
-        $this->user = $_SERVER['USER'] ?? getenv('USER') ?: '?';
-        $this->host_name = $_SERVER['HOST_NAME'] ?? getenv('HOST_NAME') ?: '?';
-        $this->pass = $_SERVER['PASS'] ?? getenv('PASS') ?: '';
-        $this->name_db = $_SERVER['NAME_DB'] ?? getenv('NAME_DB') ?: '?';
+    public function __construct() {
+        // $this->host_name = 'sql206.infinityfree.com';
+        // $this->name_db = 'if0_42202669_basic_shop';
+        // $this->user = 'if0_42202669';
+        // $this->pass = 'Basic123456789';
+        $this->host_name = 'localhost';
+        $this->name_db = 'basic_shop'; 
+        $this->user = 'root';
+        $this->pass = '';
     }
     
     public function connect(){
-        try{
-            $this->is_conn = new PDO("mysql:host=$this->host_name;dbname=$this->name_db", $this->user, $this->pass);
+        try {
+            // Đưa thẳng charset=utf8mb4 vào chuỗi DSN này (Chuẩn và an toàn nhất)
+            $dsn = "mysql:host={$this->host_name};dbname={$this->name_db};charset=utf8mb4";
+            
+            $this->is_conn = new PDO($dsn, $this->user, $this->pass);
             $this->is_conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            // XÓA dòng $this->conn->exec("set names utf8mb4"); cũ đi vì đã có charset ở DSN phía trên
+            // Nếu bạn vẫn thích dùng cách cũ thì phải viết đúng tên biến là: 
+            // $this->is_conn->exec("set names utf8mb4");
+
         }catch(PDOException $e){
             echo "Lỗi kết nối cụ thể là: " . $e->getMessage() . "<br>";
             throw $e;

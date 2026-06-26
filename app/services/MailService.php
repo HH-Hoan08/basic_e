@@ -21,9 +21,9 @@ class MailService {
         $this->mailer->SMTPAuth   = true;
         
         // THAY ĐỔI CÁC THÔNG TIN DƯỚI ĐÂY BẰNG THÔNG TIN CỦA BẠN
-        $this->mailer->Username   = 'basicadmin4@gmail.com'; 
+        $this->mailer->Username   = 'phamhuuphu31102005@gmail.com'; 
         // 🚨 CHÚ Ý: Điền mật khẩu ứng dụng MỚI của bạn vào đây. KHÔNG dùng lại mật khẩu cũ đã lộ.
-        $this->mailer->Password   = 'bgzc spxd tcjq qwom'; 
+        $this->mailer->Password   = 'cgwu ibcq jmhi bncb'; 
         
         $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $this->mailer->Port       = 465;

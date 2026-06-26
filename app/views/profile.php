@@ -85,12 +85,54 @@ if (!$isLoggedIn) {
                                 
                                 <p class="text-muted"><?= htmlspecialchars($currentUserInfo['username']) ?></p>
                                 
+                                <div class="mb-3">
+                                    <h6 class="mb-1">Hạng của tôi</h6>
+                                    <?php
+                                        $tierName = ucfirst($userTier ?? 'Member');
+                                        $tierInfo = [
+                                            'Member'  => ['class' => 'tier-member',  'icon' => 'fa-user', 'label' => 'Thành viên'],
+                                            'Silver'  => ['class' => 'tier-silver',  'icon' => 'fa-medal', 'label' => 'Bạc'],
+                                            'Gold'    => ['class' => 'tier-gold',    'icon' => 'fa-trophy', 'label' => 'Vàng'],
+                                            'Diamond' => ['class' => 'tier-diamond', 'icon' => 'fa-gem', 'label' => 'Kim cương']
+                                        ];
+                                        $currentTierInfo = $tierInfo[$tierName] ?? $tierInfo['Member'];
+                                    ?>
+                                    <span class="badge <?= $currentTierInfo['class'] ?> fs-6">
+                                        <i class="fas <?= $currentTierInfo['icon'] ?> me-1"></i><?= $currentTierInfo['label'] ?>
+                                    </span>
+                                </div>
+                                
                                 <form action="index.php?page=profile" method="POST" enctype="multipart/form-data">
                                     <div class="mb-3">
                                         <input class="form-control form-control-sm" type="file" name="avatar" accept="image/*" required>
                                     </div>
                                     <button type="submit" name="btn_update_avatar" class="btn btn-success w-100">Cập nhật ảnh</button>
                                 </form>
+
+                                <!-- [MỚI] Mục thăng hạng -->
+                                <hr class="my-4">
+                                <h6 class="mb-3 text-start fw-bold">Con đường thăng hạng</h6>
+                                <?php if (isset($nextTierName) && $nextTierName): ?>
+                                    <div class="text-start small mb-2">
+                                        <p class="mb-1 text-muted">
+                                            Chi tiêu thêm <strong class="text-success"><?= number_format($amountNeeded, 0, ',', '.') ?> đ</strong> để đạt hạng <strong><?= $nextTierName ?></strong>.
+                                        </p>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: <?= round($progressPercent, 2) ?>%;" aria-valuenow="<?= round($progressPercent, 2) ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between small text-muted mt-1">
+                                        <span><?= number_format($totalSpent, 0, ',', '.') ?> đ</span>
+                                        <span><i class="fas fa-trophy text-warning"></i></span>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="text-center">
+                                        <i class="fas fa-gem fa-2x text-primary mb-2"></i>
+                                        <p class="fw-bold mb-0">Chúc mừng!</p>
+                                        <p class="small text-muted mb-0">Bạn đã đạt hạng thành viên cao nhất.</p>
+                                    </div>
+                                <?php endif; ?>
+
                             </div>
                         </div>
                     </div>
@@ -213,11 +255,6 @@ if (!$isLoggedIn) {
                                                     <form action="index.php?page=profile&action=cancel_order" method="POST" class="d-inline-block m-0 p-0" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?');">
                                                         <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
                                                         <button type="submit" class="btn btn-sm btn-outline-danger">Hủy đơn</button>
-                                                    </form>
-                                                <?php elseif ($currentStatus === 'shipping' || $currentStatus === 'confirmed'): ?>
-                                                    <form action="index.php?page=profile&action=receive_order" method="POST" class="d-inline-block m-0 p-0" onsubmit="return confirm('Bạn xác nhận đã nhận được hàng?');">
-                                                        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
-                                                        <button type="submit" class="btn btn-sm btn-success"><i class="fa fa-check"></i> Đã nhận hàng</button>
                                                     </form>
                                                 <?php endif; ?>
                                             </td>

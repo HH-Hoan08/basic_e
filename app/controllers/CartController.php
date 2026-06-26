@@ -48,14 +48,29 @@ class CartController extends Controller {
         }
 
         $voucher = $_SESSION['voucher'] ?? null;
-        $discountAmount = 0;
-        $finalTotal = $subtotal;
+        $voucherDiscountAmount = 0;
 
         if ($voucher) {
             $voucherModel = $this->model('VoucherModel');
-            $discountAmount = $voucherModel->calculateDiscount($voucher, $subtotal);
-            $finalTotal = max(0, $subtotal - $discountAmount);
+            $voucherDiscountAmount = $voucherModel->calculateDiscount($voucher, $subtotal);
         }
+
+        // [MỚI] Tính chiết khấu theo hạng thành viên để hiển thị trên trang giỏ hàng
+        $tierDiscountAmount = 0;
+        $userTier = null;
+        $tierDiscountPercent = 0;
+        if (isset($_SESSION['user'])) {
+            $userAuthModel = $this->model('UserAuth');
+            $currentUser = $userAuthModel->getUserByUsername($_SESSION['user']);
+            if ($currentUser) {
+                $userTier = $userAuthModel->getUserTier($currentUser['id']);
+                $tierDiscountRates = ['silver' => 5, 'gold' => 10, 'diamond' => 15];
+                $tierDiscountPercent = $tierDiscountRates[strtolower($userTier)] ?? 0;
+                $tierDiscountAmount = ($subtotal * $tierDiscountPercent) / 100;
+            }
+        }
+
+        $finalTotal = max(0, $subtotal - $voucherDiscountAmount - $tierDiscountAmount);
 
         $this->view('cart', [
             'pageTitle' => 'Basic Shop - Giỏ Hàng',
@@ -65,7 +80,10 @@ class CartController extends Controller {
             'error' => $error,
             'subtotal' => $subtotal,
             'voucher' => $voucher,
-            'discountAmount' => $discountAmount,
+            'discountAmount' => $voucherDiscountAmount, // Giữ tên biến này cho voucher
+            'tierDiscountAmount' => $tierDiscountAmount, // [MỚI] Chiết khấu theo hạng
+            'tierDiscountPercent' => $tierDiscountPercent, // [MỚI] % chiết khấu
+            'userTier' => $userTier, // [MỚI] Tên hạng
             'finalTotal' => $finalTotal,
         ]);
     }
@@ -206,20 +224,33 @@ class CartController extends Controller {
         }
 
         try {
-            // Lấy thông tin voucher từ session để truyền vào model
-            $voucherInfo = null;
-            if (isset($_SESSION['voucher'])) {
-                $voucherModel = $this->model('VoucherModel');
-                $subtotal = 0;
-                foreach ($_SESSION['cart'] as $item) {
-                    $subtotal += ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
-                }
-                $discountAmount = $voucherModel->calculateDiscount($_SESSION['voucher'], $subtotal);
-                $voucherInfo = ['id' => $_SESSION['voucher']['id'], 'discount_amount' => $discountAmount];
+            // Tính subtotal một lần duy nhất
+            $subtotal = 0;
+            foreach ($_SESSION['cart'] as $item) {
+                $subtotal += ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
             }
 
-            // Gọi model để tạo đơn hàng, truyền vào ID của người dùng và thông tin voucher
-            $orderId = $orderModel->createOrder($currentUser['id'], $_SESSION['cart'], $voucherInfo);
+            // 1. Xử lý giảm giá từ voucher
+            $voucherDiscountAmount = 0;
+            $voucherId = null;
+            if (isset($_SESSION['voucher'])) {
+                $voucherModel = $this->model('VoucherModel');
+                $voucherDiscountAmount = $voucherModel->calculateDiscount($_SESSION['voucher'], $subtotal);
+                $voucherId = $_SESSION['voucher']['id'];
+            }
+
+            // 2. [MỚI] Xử lý giảm giá theo hạng thành viên
+            $userTier = $userAuthModel->getUserTier($currentUser['id']);
+            $tierDiscountRates = ['silver' => 5, 'gold' => 10, 'diamond' => 15];
+            $tierDiscountPercent = $tierDiscountRates[strtolower($userTier)] ?? 0;
+            $tierDiscountAmount = ($subtotal * $tierDiscountPercent) / 100;
+
+            // 3. [MỚI] Tổng hợp thông tin giảm giá để tạo đơn hàng (cột discount_amount trong DB sẽ là tổng của cả hai)
+            $totalDiscountAmount = $voucherDiscountAmount + $tierDiscountAmount;
+            $orderCreationInfo = ['id' => $voucherId, 'discount_amount' => $totalDiscountAmount];
+
+            // Gọi model để tạo đơn hàng, truyền vào ID của người dùng và thông tin giảm giá đã tổng hợp
+            $orderId = $orderModel->createOrder($currentUser['id'], $_SESSION['cart'], $orderCreationInfo);
             
             // Lấy thông tin sản phẩm đầu tiên trong giỏ để chuyển hướng qua trang đánh giá
             $firstItem = reset($_SESSION['cart']);

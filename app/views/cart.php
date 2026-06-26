@@ -100,8 +100,14 @@
                             <div class="card-body">
                                 <h5 class="card-title mb-3">Tổng cộng</h5>
                                 <div class="d-flex justify-content-between mb-2"><span>Tạm tính:</span> <span><?= number_format($subtotal, 0, ',', '.') ?>đ</span></div>
-                                <?php if (isset($voucher)): ?>
-                                    <div class="d-flex justify-content-between mb-2 text-success"><span>Giảm giá (<?= htmlspecialchars($voucher['code']) ?>):</span> <span>- <?= number_format($discountAmount, 0, ',', '.') ?>đ</span></div>
+                                <?php if (isset($voucher) && $discountAmount > 0): ?>
+                                    <div class="d-flex justify-content-between mb-2 text-success"><span>Giảm giá (Voucher: <?= htmlspecialchars($voucher['code']) ?>):</span> <span>- <?= number_format($discountAmount, 0, ',', '.') ?>đ</span></div>
+                                <?php endif; ?>
+                                <?php if (isset($tierDiscountAmount) && $tierDiscountAmount > 0): ?>
+                                    <div class="d-flex justify-content-between mb-2 text-success">
+                                        <span>Chiết khấu hạng <?= ucfirst($userTier ?? 'Member') ?> (<?= $tierDiscountPercent ?>%):</span>
+                                        <span>- <?= number_format($tierDiscountAmount, 0, ',', '.') ?>đ</span>
+                                    </div>
                                 <?php endif; ?>
                                 <hr>
                                 <div class="d-flex justify-content-between fw-bold fs-5"><span class="text-danger">Thành tiền:</span> <span class="text-danger"><?= number_format($finalTotal, 0, ',', '.') ?>đ</span></div>

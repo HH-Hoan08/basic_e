@@ -106,31 +106,41 @@ class ProfileController extends Controller {
             exit();
         }
 
-        // [MỚI] Xử lý khách hàng bấm "Đã nhận được hàng"
-        if (isset($_GET['action']) && $_GET['action'] === 'receive_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $orderId = (int)($_POST['order_id'] ?? 0);
-            $orderModel = $this->model('OrderModel');
-            
-            try {
-                if ($orderModel->markAsReceived($orderId, $userInfo['id'])) {
-                    $_SESSION['profile_success'] = "Cảm ơn bạn đã xác nhận nhận hàng! Đơn hàng #{$orderId} đã được giao thành công.";
-                } else {
-                    $_SESSION['profile_error'] = "Không thể xác nhận đơn hàng #{$orderId}.";
-                }
-            } catch (Exception $e) {
-                $_SESSION['profile_error'] = "Lỗi: " . $e->getMessage();
-            }
-
-            header("Location: " . BASE_URL . "index.php?page=profile#orders");
-            exit();
-        }
-
         // lấy email admin gửi cho user
         $emailModel = $this->model('AdminModel');
         $userEmails = [];
+        $userTier = 'member'; // Khởi tạo giá trị mặc định
+
+        // [MỚI] Khai báo các biến cho thông tin lên hạng
+        $totalSpent = 0;
+        $nextTierName = null;
+        $amountNeeded = 0;
+        $progressPercent = 0;
+
         if ($userInfo) {
-            $tier = $userModel->getUserTier($userInfo['id']);
-            $userEmails = $emailModel->getEmailsForUser($userInfo['username'], $tier);
+            $userTier = $userModel->getUserTier($userInfo['id']);
+            $userEmails = $emailModel->getEmailsForUser($userInfo['username'], $userTier);
+
+            // [MỚI] Tính toán thông tin để lên hạng
+            $totalSpent = $emailModel->getUserTotalSpent($userInfo['id']); // Dùng model đã có
+            
+            $tierThresholds = [
+                'member' => ['next' => 'Bạc', 'goal' => 5000000],
+                'silver' => ['next' => 'Vàng', 'goal' => 20000000],
+                'gold'   => ['next' => 'Kim cương', 'goal' => 50000000],
+                'diamond' => ['next' => null, 'goal' => 0]
+            ];
+
+            $currentTierLower = strtolower($userTier);
+            $tierInfo = $tierThresholds[$currentTierLower] ?? $tierThresholds['member'];
+
+            if ($tierInfo['next']) {
+                $nextTierName = $tierInfo['next'];
+                $amountNeeded = max(0, $tierInfo['goal'] - $totalSpent);
+                $progressPercent = $tierInfo['goal'] > 0 ? min(100, ($totalSpent / $tierInfo['goal']) * 100) : 100;
+            } else { // Đã là hạng cao nhất
+                $progressPercent = 100;
+            }
         }
 
         // Lấy đánh giá của user
@@ -149,6 +159,11 @@ class ProfileController extends Controller {
             'userOrders' => $orders,
             'userEmails' => $userEmails,
             'userReviews' => $userReviews,
+            'userTier' => $userTier, // Truyền hạng thành viên sang view
+            'totalSpent' => $totalSpent,
+            'nextTierName' => $nextTierName,
+            'amountNeeded' => $amountNeeded,
+            'progressPercent' => $progressPercent,
         ]);
     }
 

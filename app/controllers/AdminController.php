@@ -589,23 +589,28 @@ class AdminController extends Controller {
         $body .= "<p><strong>Địa chỉ giao hàng:</strong> " . htmlspecialchars($order['address'] ?? 'Không có thông tin') . "</p>";
         $body .= "<h3 style='border-bottom: 2px solid #28a745; padding-bottom: 5px;'>Chi tiết đơn hàng:</h3>";
         $body .= "<table border='1' cellpadding='10' cellspacing='0' style='border-collapse: collapse; width: 100%; border: 1px solid #ddd;'>";
-        $body .= "<tr style='background-color: #f8f9fa;'><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr>";
+        $body .= "<tr style='background-color: #f8f9fa;'><th>Ảnh</th><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr>";
         
         foreach ($order['items'] as $item) {
             $itemTotal = $item['quantity'] * $item['unit_price'];
+            // [MỚI] Tạo URL đầy đủ cho ảnh để hiển thị trong email
+            $imageUrl = BASE_URL . 'assets/img/' . htmlspecialchars($item['product_image']);
+
             $body .= "<tr>";
+            $body .= "<td align='center'><img src='" . $imageUrl . "' alt='" . htmlspecialchars($item['product_name']) . "' width='60' style='max-width: 60px; border: 1px solid #ddd; padding: 2px;'></td>";
             $body .= "<td>" . htmlspecialchars($item['product_name']) . "</td>";
             $body .= "<td align='center'>" . $item['quantity'] . "</td>";
             $body .= "<td align='right'>" . number_format($item['unit_price'], 0, ',', '.') . " đ</td>";
             $body .= "<td align='right'>" . number_format($itemTotal, 0, ',', '.') . " đ</td>";
             $body .= "</tr>";
         }
-        
-        $body .= "<tr><td colspan='3' align='right'><strong>Tạm tính:</strong></td><td align='right'>" . number_format($order['total_price'] + $order['discount_amount'], 0, ',', '.') . " đ</td></tr>";
+
+        // [SỬA] Cập nhật colspan từ 3 lên 4
+        $body .= "<tr><td colspan='4' align='right'><strong>Tạm tính:</strong></td><td align='right'>" . number_format($order['total_price'] + $order['discount_amount'], 0, ',', '.') . " đ</td></tr>";
         if ($order['discount_amount'] > 0) {
-            $body .= "<tr><td colspan='3' align='right'><strong>Giảm giá:</strong></td><td align='right'>-" . number_format($order['discount_amount'], 0, ',', '.') . " đ</td></tr>";
+            $body .= "<tr><td colspan='4' align='right'><strong>Giảm giá:</strong></td><td align='right'>-" . number_format($order['discount_amount'], 0, ',', '.') . " đ</td></tr>";
         }
-        $body .= "<tr><td colspan='3' align='right'><strong>Tổng thanh toán:</strong></td><td align='right'><strong style='color: #dc3545; font-size: 1.2em;'>" . number_format($order['total_price'], 0, ',', '.') . " đ</strong></td></tr>";
+        $body .= "<tr><td colspan='4' align='right'><strong>Tổng thanh toán:</strong></td><td align='right'><strong style='color: #dc3545; font-size: 1.2em;'>" . number_format($order['total_price'], 0, ',', '.') . " đ</strong></td></tr>";
         $body .= "</table>";
         $body .= "<p>Chúng tôi sẽ liên hệ lại với bạn trước khi giao hàng.</p>";
         $body .= "<p>Trân trọng,<br><strong>Đội ngũ Basic Shop</strong></p>";

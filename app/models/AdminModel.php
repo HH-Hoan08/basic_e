@@ -190,6 +190,20 @@ class AdminModel {
         return $stmt->execute([$isLocked, $userId]);
     }
 
+    // [MỚI] Lấy tổng chi tiêu của một người dùng
+    public function getUserTotalSpent(int $userId): float {
+        $sql = "SELECT COALESCE(SUM(total_price), 0) as total_spent 
+                FROM orders 
+                WHERE user_id = ? AND status = 'delivered'";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$userId]);
+            return (float)$stmt->fetchColumn();
+        } catch (Exception $e) {
+            return 0.0;
+        }
+    }
+
     // ==========================================
     // 7. QUẢN LÝ SẢN PHẨM (CRUD)
     // ==========================================
