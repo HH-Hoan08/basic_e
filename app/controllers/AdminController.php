@@ -593,11 +593,12 @@ class AdminController extends Controller {
         
         foreach ($order['items'] as $item) {
             $itemTotal = $item['quantity'] * $item['unit_price'];
-            // [MỚI] Tạo URL đầy đủ cho ảnh để hiển thị trong email
-            $imageUrl = BASE_URL . 'assets/img/' . htmlspecialchars($item['product_image']);
+            // [SỬA] Thêm ảnh mặc định nếu không có và đảm bảo URL là đường dẫn tuyệt đối để hiển thị trong email
+            $imageName = !empty($item['product_image']) ? $item['product_image'] : 'no-image.jpg';
+            $imageUrl = BASE_URL . 'assets/img/' . $imageName;
 
             $body .= "<tr>";
-            $body .= "<td align='center'><img src='" . $imageUrl . "' alt='" . htmlspecialchars($item['product_name']) . "' width='60' style='max-width: 60px; border: 1px solid #ddd; padding: 2px;'></td>";
+            $body .= "<td align='center'><img src='" . htmlspecialchars($imageUrl) . "' alt='" . htmlspecialchars($item['product_name']) . "' width='60' style='max-width: 60px; border: 1px solid #ddd; padding: 2px;'></td>";
             $body .= "<td>" . htmlspecialchars($item['product_name']) . "</td>";
             $body .= "<td align='center'>" . $item['quantity'] . "</td>";
             $body .= "<td align='right'>" . number_format($item['unit_price'], 0, ',', '.') . " đ</td>";

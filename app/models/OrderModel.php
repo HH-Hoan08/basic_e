@@ -172,7 +172,7 @@ class OrderModel {
      */
     public function getOrderDetails(int $orderId, ?int $userId = null): ?array {
         try {
-            $sql = "SELECT o.*, u.username, u.fullname, u.email
+            $sql = "SELECT o.*, u.username, u.fullname, u.email, u.address
                     FROM orders o
                     JOIN users u ON o.user_id = u.id
                     WHERE o.id = ?";
