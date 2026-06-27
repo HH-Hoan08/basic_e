@@ -1,0 +1,39 @@
+/*
+ * Custom CSS - Thêm mã CSS tùy chỉnh của bạn vào đây
+ */
+
+/* Con trỏ cho hiệu ứng gõ chữ (typewriter) */
+.cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background-color: #212529; /* Màu chữ mặc định của Bootstrap */
+    animation: blink 0.7s infinite;
+    vertical-align: text-bottom;
+    margin-left: 2px;
+}
+
+.text-success .cursor {
+    background-color: #198754; /* Màu success của Bootstrap */
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Tùy chỉnh cho phần "Danh mục của tháng" */
+#categories-of-month {
+    padding-top: 7rem; /* Tăng khoảng đệm phía trên để tạo không gian cho chỉ báo carousel */
+}
+
+/* Kéo chỉ báo carousel xuống khoảng trống giữa banner và danh mục */
+#template-mo-zay-hero-carousel .carousel-indicators {
+    bottom: -3.5rem; /* Điều chỉnh vị trí của chỉ báo xuống dưới banner */
+}
+
+/* Tùy chỉnh thời gian của hiệu ứng trượt carousel */
+/* Giá trị mặc định của Bootstrap là 0.6s */
+.carousel-item {
+    transition: transform 1s ease-in-out; /* Ví dụ: đổi thành 1 giây */
+}

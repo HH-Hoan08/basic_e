@@ -94,9 +94,9 @@
         public function getUserTier(int $userId): string {
             $sql = "SELECT 
                        LOWER(CASE 
-                           WHEN SUM(o.total_price) >= 50000000 THEN 'Diamond'
-                           WHEN SUM(o.total_price) >= 20000000 THEN 'Gold'
-                           WHEN SUM(o.total_price) >= 5000000 THEN 'Silver'
+                           WHEN COALESCE(SUM(o.total_price), 0) >= 50000000 THEN 'Diamond'
+                           WHEN COALESCE(SUM(o.total_price), 0) >= 20000000 THEN 'Gold'
+                           WHEN COALESCE(SUM(o.total_price), 0) >= 5000000 THEN 'Silver'
                            ELSE 'Member'
                        END) as tier
                     FROM orders o
