@@ -76,6 +76,9 @@ class AdminController extends Controller {
             case 'delete_category':
                 $this->deleteCategory();
                 break;
+            case 'bulk_action_products':
+                $this->bulkActionProducts();
+                break;
             default:
                 $this->dashboard();
                 break;
@@ -331,8 +334,14 @@ class AdminController extends Controller {
             unset($_SESSION['admin_message']);
         }
 
-        $products = $this->adminModel->getAllProductsForAdmin();
-        $this->renderAdminView('products', ['products' => $products, 'message' => $message]);
+        // [MỚI] Thêm bộ lọc
+        $filter = $_GET['filter'] ?? 'newest'; // Mặc định là mới nhất
+
+        $products = $this->adminModel->getAllProductsForAdmin($filter);
+        $this->renderAdminView('products', [
+            'products' => $products, 'message' => $message,
+            'current_filter' => $filter // Truyền bộ lọc hiện tại sang view
+        ]);
     }
 
     private function productForm() {
@@ -408,8 +417,63 @@ class AdminController extends Controller {
     private function deleteProduct() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
             $productId = (int)$_POST['product_id'];
-            $_SESSION['admin_message'] = $this->adminModel->deleteProduct($productId) ? ['type' => 'success', 'text' => 'Đã xóa sản phẩm thành công.'] : ['type' => 'danger', 'text' => 'Xóa sản phẩm thất bại.'];
+            try {
+                if ($this->adminModel->deleteProduct($productId)) {
+                    $_SESSION['admin_message'] = ['type' => 'success', 'text' => 'Đã xóa sản phẩm thành công.'];
+                } else {
+                    // Trường hợp hiếm gặp khi model trả về false mà không ném exception
+                    $_SESSION['admin_message'] = ['type' => 'danger', 'text' => 'Xóa sản phẩm thất bại không rõ lý do.'];
+                }
+            } catch (Exception $e) {
+                $_SESSION['admin_message'] = ['type' => 'danger', 'text' => $e->getMessage()];
+            }
         }
+        header("Location: " . BASE_URL . "index.php?page=admin&action=products");
+        exit();
+    }
+
+    private function bulkActionProducts() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_action']) && isset($_POST['product_ids'])) {
+            $action = $_POST['bulk_action'];
+            $productIds = $_POST['product_ids'];
+
+            if ($action === 'delete' && !empty($productIds)) {
+                // Chuyển đổi ID thành số nguyên để bảo mật
+                $productIds = array_map('intval', $productIds);
+                try {
+                    $deletedCount = $this->adminModel->deleteMultipleProducts($productIds);
+                    $_SESSION['admin_message'] = ['type' => 'success', 'text' => "Đã xóa thành công {$deletedCount} sản phẩm."];
+                } catch (Exception $e) {
+                    $_SESSION['admin_message'] = ['type' => 'danger', 'text' => 'Lỗi khi xóa sản phẩm: ' . $e->getMessage()];
+                }
+            } elseif ($action === 'apply_discount' && !empty($productIds) && isset($_POST['discount_percentage'])) {
+                $productIds = array_map('intval', $productIds);
+                $percentage = (float)$_POST['discount_percentage'];
+                if ($percentage > 0 && $percentage <= 100) {
+                    try {
+                        $updatedCount = $this->adminModel->applyDiscountToMultipleProducts($productIds, $percentage);
+                        $_SESSION['admin_message'] = ['type' => 'success', 'text' => "Đã áp dụng giảm giá {$percentage}% cho {$updatedCount} sản phẩm."];
+                    } catch (Exception $e) {
+                        $_SESSION['admin_message'] = ['type' => 'danger', 'text' => 'Lỗi khi áp dụng giảm giá: ' . $e->getMessage()];
+                    }
+                } else {
+                    $_SESSION['admin_message'] = ['type' => 'warning', 'text' => 'Phần trăm giảm giá không hợp lệ.'];
+                }
+            } elseif ($action === 'remove_discount' && !empty($productIds)) {
+                $productIds = array_map('intval', $productIds);
+                try {
+                    $updatedCount = $this->adminModel->removeDiscountFromMultipleProducts($productIds);
+                    $_SESSION['admin_message'] = ['type' => 'success', 'text' => "Đã xóa giảm giá cho {$updatedCount} sản phẩm."];
+                } catch (Exception $e) {
+                    $_SESSION['admin_message'] = ['type' => 'danger', 'text' => 'Lỗi khi xóa giảm giá: ' . $e->getMessage()];
+                }
+            } else {
+                $_SESSION['admin_message'] = ['type' => 'warning', 'text' => 'Hành động không hợp lệ hoặc không có sản phẩm nào được chọn.'];
+            }
+        } else {
+            $_SESSION['admin_message'] = ['type' => 'warning', 'text' => 'Yêu cầu không hợp lệ.'];
+        }
+
         header("Location: " . BASE_URL . "index.php?page=admin&action=products");
         exit();
     }
