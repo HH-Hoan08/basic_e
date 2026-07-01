@@ -33,14 +33,20 @@
                                 'confirmed' => 'Đã xác nhận',
                                 'shipping' => 'Đang giao',
                                 'delivered' => 'Thành công',
-                                'cancelled' => 'Đã hủy'
+                                'return_request' => 'Yêu cầu hoàn trả',
+                                'returned' => 'Đã hoàn trả',
+                                'cancelled' => 'Đã hủy',
+                                'refused' => 'Giao hàng thất bại'
                             ];
                             $statusBadges = [
                                 'pending' => 'bg-warning text-dark',
                                 'confirmed' => 'bg-info text-dark',
                                 'shipping' => 'bg-primary',
                                 'delivered' => 'bg-success',
-                                'cancelled' => 'bg-danger'
+                                'return_request' => 'bg-info text-dark',
+                                'returned' => 'bg-dark',
+                                'cancelled' => 'bg-secondary',
+                                'refused' => 'bg-danger'
                             ];
                             $currentStatus = $order['status'] ?? 'pending';
                         ?>
@@ -52,12 +58,20 @@
                     <p><strong>Email:</strong> <?= htmlspecialchars($order['email']) ?></p>
                     <p><strong>Xác nhận bởi:</strong> <?= htmlspecialchars($order['confirmed_by'] ?? 'Chưa') ?></p>
                 </div>
+                <?php if (!empty($order['return_reason'])): ?>
+                <div class="col-12 mt-3">
+                    <p class="mb-1"><strong>Lý do hoàn trả của khách:</strong></p>
+                    <div class="alert alert-warning p-2"><?= nl2br(htmlspecialchars($order['return_reason'])) ?></div>
+                </div>
+                <?php endif; ?>
             </div>
             <hr>
             <!-- Form cập nhật trạng thái đơn hàng -->
-            <h5 class="mb-3">Cập nhật Trạng thái</h5>
-            <?php if ($currentStatus === 'cancelled'): ?>
-                <p class="text-muted fst-italic">Đơn hàng đã bị hủy và không thể thay đổi trạng thái.</p>
+            <h5 class="mb-3">Cập nhật Trạng thái (Lần giao: <?= htmlspecialchars($order['delivery_attempts'] ?? 1) ?>)</h5>
+            <?php if (in_array($currentStatus, ['delivered', 'cancelled'])): ?>
+                <p class="text-muted fst-italic">Đơn hàng đã hoàn tất/bị hủy và không thể thay đổi trạng thái.</p>
+            <?php elseif ($currentStatus === 'refused' && ($order['delivery_attempts'] ?? 1) >= 2): ?>
+                <p class="text-danger fst-italic">Đơn hàng đã giao thất bại 2 lần và bị khóa vĩnh viễn.</p>
             <?php else: ?>
                 <form action="<?= BASE_URL ?>index.php?page=admin&action=view_order&order_id=<?= $order['id'] ?>" method="POST" class="d-flex align-items-center m-0">
                     <input type="hidden" name="order_id" value="<?= htmlspecialchars($order['id'] ?? '') ?>">
@@ -67,6 +81,9 @@
                         <option value="shipping" <?= $currentStatus === 'shipping' ? 'selected' : '' ?>>Đang giao</option>
                         <option value="delivered" <?= $currentStatus === 'delivered' ? 'selected' : '' ?>>Thành công</option>
                         <option value="cancelled" <?= $currentStatus === 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
+                        <option value="return_request" <?= $currentStatus === 'return_request' ? 'selected' : '' ?>>Yêu cầu hoàn trả</option>
+                        <option value="returned" <?= $currentStatus === 'returned' ? 'selected' : '' ?>>Đã hoàn trả</option>
+                        <option value="refused" <?= $currentStatus === 'refused' ? 'selected' : '' ?>>Giao hàng thất bại</option>
                     </select>
                     <button type="submit" name="update_status" class="btn btn-sm btn-success">Lưu trạng thái</button>
                 </form>

@@ -35,14 +35,20 @@
                                         'confirmed' => 'bg-info text-dark',
                                         'shipping' => 'bg-primary',
                                         'delivered' => 'bg-success',
-                                        'cancelled' => 'bg-danger'
+                                        'return_request' => 'bg-info text-dark',
+                                        'returned' => 'bg-dark',
+                                        'cancelled' => 'bg-secondary',
+                                        'refused' => 'bg-danger'
                                     ];
                                     $statusText = [
                                         'pending' => 'Chờ xác nhận',
                                         'confirmed' => 'Đã xác nhận',
                                         'shipping' => 'Đang giao',
                                         'delivered' => 'Thành công',
-                                        'cancelled' => 'Đã hủy'
+                                        'return_request' => 'Yêu cầu hoàn trả',
+                                        'returned' => 'Đã hoàn trả',
+                                        'cancelled' => 'Đã hủy',
+                                        'refused' => 'Giao hàng thất bại'
                                     ];
                                     $currentStatus = $order['status'] ?? 'pending';
                                 ?>
@@ -51,8 +57,11 @@
                                 </span>
                             </td>
                             <td>
-                                <?php if ($currentStatus === 'cancelled'): ?>
+                                <?php if (in_array($currentStatus, ['delivered', 'cancelled'])): ?>
                                     <span class="text-muted fst-italic me-2">Không thể sửa</span>
+                                    <a href="<?= BASE_URL ?>index.php?page=admin&action=view_order&order_id=<?= $order['id'] ?>" class="btn btn-sm btn-outline-primary flex-shrink-0" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
+                                <?php elseif ($currentStatus === 'refused' && ($order['delivery_attempts'] ?? 1) >= 2): ?>
+                                    <span class="text-danger fst-italic me-2">Đã khóa</span>
                                     <a href="<?= BASE_URL ?>index.php?page=admin&action=view_order&order_id=<?= $order['id'] ?>" class="btn btn-sm btn-outline-primary flex-shrink-0" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
                                 <?php else: ?>
                                     <form action="<?= BASE_URL ?>index.php?page=admin&action=orders" method="POST" class="d-flex align-items-center gap-2">
@@ -63,6 +72,9 @@
                                             <option value="shipping" <?= $currentStatus === 'shipping' ? 'selected' : '' ?>>Đang giao</option>
                                             <option value="delivered" <?= $currentStatus === 'delivered' ? 'selected' : '' ?>>Thành công</option>
                                             <option value="cancelled" <?= $currentStatus === 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
+                                            <option value="return_request" <?= $currentStatus === 'return_request' ? 'selected' : '' ?>>Yêu cầu hoàn trả</option>
+                                            <option value="returned" <?= $currentStatus === 'returned' ? 'selected' : '' ?>>Đã hoàn trả</option>
+                                            <option value="refused" <?= $currentStatus === 'refused' ? 'selected' : '' ?>>Giao hàng thất bại</option>
                                         </select>
                                         <button type="submit" name="update_status" class="btn btn-sm btn-outline-success flex-shrink-0">Lưu</button>
                                         <a href="<?= BASE_URL ?>index.php?page=admin&action=view_order&order_id=<?= $order['id'] ?>" class="btn btn-sm btn-outline-primary flex-shrink-0" title="Xem chi tiết"><i class="fas fa-eye"></i></a>

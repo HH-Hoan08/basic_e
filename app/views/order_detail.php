@@ -33,14 +33,16 @@
                                             'confirmed' => 'Đã xác nhận',
                                             'shipping' => 'Đang giao',
                                             'delivered' => 'Thành công',
-                                            'cancelled' => 'Đã hủy'
+                                            'cancelled' => 'Đã hủy',
+                                            'refused' => 'Giao hàng thất bại'
                                         ];
                                         $statusBadges = [
                                             'pending' => 'bg-warning text-dark',
                                             'confirmed' => 'bg-info text-dark',
                                             'shipping' => 'bg-primary',
                                             'delivered' => 'bg-success',
-                                            'cancelled' => 'bg-danger'
+                                            'cancelled' => 'bg-secondary',
+                                            'refused' => 'bg-danger'
                                         ];
                                         $currentStatus = $order['status'] ?? 'pending';
                                     ?>

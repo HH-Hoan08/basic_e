@@ -102,7 +102,7 @@ class OrderModel {
 
         try {
             // 1. Lấy thông tin đơn hàng và kiểm tra quyền sở hữu + trạng thái
-            $sqlGetOrder = "SELECT status FROM orders WHERE id = ? AND user_id = ?";
+            $sqlGetOrder = "SELECT status, voucher_id FROM orders WHERE id = ? AND user_id = ?";
             $stmtGetOrder = $this->db->prepare($sqlGetOrder);
             $stmtGetOrder->execute([$orderId, $userId]);
             $order = $stmtGetOrder->fetch(PDO::FETCH_ASSOC);
@@ -135,6 +135,13 @@ class OrderModel {
             $sqlCancelOrder = "UPDATE orders SET status = 'cancelled' WHERE id = ?"; // Đã bỏ cột 'updated_at'
             $stmtCancelOrder = $this->db->prepare($sqlCancelOrder);
             $stmtCancelOrder->execute([$orderId]);
+
+            // 5. [MỚI] Hoàn lại lượt sử dụng cho voucher nếu có
+            if (!empty($order['voucher_id'])) {
+                $sqlVoucher = "UPDATE vouchers SET used_count = GREATEST(0, used_count - 1) WHERE id = ?";
+                $stmtVoucher = $this->db->prepare($sqlVoucher);
+                $stmtVoucher->execute([$order['voucher_id']]);
+            }
 
             $this->db->commit();
             return $stmtCancelOrder->rowCount() > 0;
@@ -172,7 +179,7 @@ class OrderModel {
      */
     public function getOrderDetails(int $orderId, ?int $userId = null): ?array {
         try {
-            $sql = "SELECT o.*, u.username, u.fullname, u.email, u.address
+            $sql = "SELECT o.*, u.username, u.fullname, u.email
                     FROM orders o
                     JOIN users u ON o.user_id = u.id
                     WHERE o.id = ?";
@@ -219,12 +226,68 @@ class OrderModel {
         if ($order['status'] === 'cancelled') {
             throw new Exception("Không thể xác nhận nhận hàng cho đơn hàng đã bị hủy.");
         }
-        if ($order['status'] === 'delivered') {
-            throw new Exception("Đơn hàng này đã được xác nhận giao thành công từ trước.");
-        }
 
         $sqlUpdate = "UPDATE orders SET status = 'delivered' WHERE id = ?";
         $stmtUpdate = $this->db->prepare($sqlUpdate);
         return $stmtUpdate->execute([$orderId]);
+    }
+
+    /**
+     * Khách hàng yêu cầu hoàn trả hàng (chỉ khi đơn hàng đã 'delivered').
+     * @param int $orderId
+     * @param int $userId
+     * @param string $reason
+     * @return bool
+     * @throws Exception
+     */
+    public function requestReturn(int $orderId, int $userId, string $reason): bool {
+        $sqlCheck = "SELECT status FROM orders WHERE id = ? AND user_id = ?";
+        $stmtCheck = $this->db->prepare($sqlCheck);
+        $stmtCheck->execute([$orderId, $userId]);
+        $order = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+        if (!$order) {
+            throw new Exception("Đơn hàng không tồn tại hoặc bạn không có quyền.");
+        }
+        if ($order['status'] !== 'delivered') {
+            throw new Exception("Chỉ có thể yêu cầu hoàn trả cho đơn hàng đã giao thành công.");
+        }
+
+        $sqlUpdate = "UPDATE orders SET status = 'return_request', return_reason = ? WHERE id = ?";
+        $stmtUpdate = $this->db->prepare($sqlUpdate);
+        return $stmtUpdate->execute([$reason, $orderId]);
+    }
+
+    /**
+     * Khách hàng yêu cầu giao lại đơn hàng đã bị từ chối.
+     * @param int $orderId
+     * @param int $userId
+     * @return bool
+     * @throws Exception
+     */
+    public function requestRedelivery(int $orderId, int $userId): bool {
+        $this->db->beginTransaction();
+        try {
+            // Lấy thông tin đơn hàng để kiểm tra
+            $sqlGetOrder = "SELECT status, delivery_attempts FROM orders WHERE id = ? AND user_id = ? FOR UPDATE";
+            $stmtGetOrder = $this->db->prepare($sqlGetOrder);
+            $stmtGetOrder->execute([$orderId, $userId]);
+            $order = $stmtGetOrder->fetch(PDO::FETCH_ASSOC);
+
+            if (!$order) throw new Exception("Đơn hàng không tồn tại.");
+            if ($order['status'] !== 'refused') throw new Exception("Chỉ có thể yêu cầu giao lại với đơn hàng bị từ chối.");
+            if (($order['delivery_attempts'] ?? 1) >= 2) throw new Exception("Đơn hàng này đã vượt quá số lần giao lại cho phép.");
+
+            // Chuyển trạng thái về 'pending' và tăng số lần thử giao lên
+            $sqlUpdate = "UPDATE orders SET status = 'pending', delivery_attempts = delivery_attempts + 1 WHERE id = ?";
+            $stmtUpdate = $this->db->prepare($sqlUpdate);
+            $stmtUpdate->execute([$orderId]);
+
+            $this->db->commit();
+            return $stmtUpdate->rowCount() > 0;
+        } catch (Exception $e) {
+            if ($this->db->inTransaction()) $this->db->rollBack();
+            throw $e;
+        }
     }
 }

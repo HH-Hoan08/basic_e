@@ -70,21 +70,24 @@ class AdminModel {
         $this->db->beginTransaction();
 
         try {
-            // 1. Lấy trạng thái hiện tại của đơn hàng, khóa dòng để tránh race condition
-            $sqlGetCurrentStatus = "SELECT status FROM orders WHERE id = ? FOR UPDATE";
+            // 1. Lấy trạng thái và số lần giao hiện tại, khóa dòng để tránh race condition
+            $sqlGetCurrentStatus = "SELECT status, delivery_attempts, voucher_id FROM orders WHERE id = ? FOR UPDATE";
             $stmtGetCurrentStatus = $this->db->prepare($sqlGetCurrentStatus);
             $stmtGetCurrentStatus->execute([$orderId]);
             $currentOrder = $stmtGetCurrentStatus->fetch(PDO::FETCH_ASSOC);
 
             if (!$currentOrder) {
+                $this->db->rollBack();
                 throw new Exception("Đơn hàng không tồn tại.");
             }
+            $voucherId = $currentOrder['voucher_id'];
             $currentStatus = $currentOrder['status'];
+            $currentAttempts = (int)($currentOrder['delivery_attempts'] ?? 1);
 
-            // [MỚI] Yêu cầu: Không cho phép thay đổi trạng thái của đơn hàng đã bị hủy.
-            if ($currentStatus === 'cancelled') {
-                $this->db->rollBack(); // Không có gì để commit
-                throw new Exception("Không thể thay đổi trạng thái của đơn hàng đã bị hủy.");
+            // [SỬA] Khóa vĩnh viễn nếu đơn hàng đã hoàn tất, đã hủy, đã hoàn trả, hoặc giao thất bại 2 lần.
+            if (in_array($currentStatus, ['delivered', 'cancelled', 'returned']) || ($currentStatus === 'refused' && $currentAttempts >= 2)) {
+                $this->db->rollBack();
+                throw new Exception("Không thể thay đổi trạng thái của đơn hàng đã hoàn tất hoặc đã hủy.");
             }
 
             // Nếu trạng thái không thay đổi thì không làm gì cả
@@ -101,17 +104,32 @@ class AdminModel {
 
             // 3. Xử lý logic hoàn/trừ kho nếu có sản phẩm trong đơn
             if (!empty($items)) {
-                // Trường hợp 1: Hủy đơn hàng (chuyển sang 'cancelled')
-                if ($status === 'cancelled' && $currentStatus !== 'cancelled') {
+                // Trường hợp 1: Hủy hoặc Từ chối (chuyển sang 'cancelled' hoặc 'refused') -> Hoàn kho
+                // [SỬA BUG] Chỉ hoàn kho khi trạng thái CÓ THAY ĐỔI từ một trạng thái chưa hoàn kho sang trạng thái hoàn kho.
+                $shouldRestock = false;
+                // Hoàn kho khi hủy, admin xác nhận hoàn trả, hoặc giao thất bại LẦN CUỐI.
+                if ((in_array($status, ['cancelled', 'returned']) && !in_array($currentStatus, ['cancelled', 'returned'])) ||
+                    ($status === 'refused' && $currentStatus !== 'refused' && $currentAttempts >= 2)) {
+                    $shouldRestock = true;
+                }
+                if ($shouldRestock) {
                     $sqlUpdateProduct = "UPDATE products SET stock = COALESCE(stock, 0) + ?, sold_count = GREATEST(0, COALESCE(sold_count, 0) - ?) WHERE id = ?";
                     $stmtUpdateProduct = $this->db->prepare($sqlUpdateProduct);
                     foreach ($items as $item) {
                         $stmtUpdateProduct->execute([$item['quantity'], $item['quantity'], $item['product_id']]);
                     }
+                    // [MỚI] Hoàn lại voucher
+                    if (!empty($voucherId)) {
+                        $sqlVoucher = "UPDATE vouchers SET used_count = GREATEST(0, used_count - 1) WHERE id = ?";
+                        $stmtVoucher = $this->db->prepare($sqlVoucher);
+                        $stmtVoucher->execute([$voucherId]);
+                    }
                 }
-                // Trường hợp 2: Khôi phục đơn hàng đã hủy (chuyển từ 'cancelled' sang trạng thái khác)
-                else if ($currentStatus === 'cancelled' && $status !== 'cancelled') {
-                    // Kiểm tra tồn kho trước khi khôi phục
+                // Trường hợp 2: Khôi phục đơn hàng đã hủy/từ chối/hoàn trả
+                // Chỉ trừ kho lại khi khôi phục từ trạng thái ĐÃ HOÀN KHO.
+                $wasRestocked = in_array($currentStatus, ['cancelled', 'returned']) || ($currentStatus === 'refused' && $currentAttempts >= 2);
+                $isBecomingActive = !in_array($status, ['cancelled', 'refused', 'returned']);
+                if ($wasRestocked && $isBecomingActive) {
                     $sqlCheckStock = "SELECT name, stock FROM products WHERE id = ?";
                     $stmtCheckStock = $this->db->prepare($sqlCheckStock);
                     foreach ($items as $item) {
@@ -121,6 +139,16 @@ class AdminModel {
                             throw new Exception("Không đủ tồn kho cho sản phẩm '{$product['name']}' để khôi phục đơn hàng.");
                         }
                     }
+                    // [MỚI] Kiểm tra voucher trước khi sử dụng lại
+                    if (!empty($voucherId)) {
+                        $sqlCheckVoucher = "SELECT quantity, used_count FROM vouchers WHERE id = ? FOR UPDATE";
+                        $stmtCheckVoucher = $this->db->prepare($sqlCheckVoucher);
+                        $stmtCheckVoucher->execute([$voucherId]);
+                        $voucher = $stmtCheckVoucher->fetch(PDO::FETCH_ASSOC);
+                        if (!$voucher || $voucher['quantity'] <= $voucher['used_count']) {
+                            throw new Exception("Không thể khôi phục đơn hàng vì voucher đã hết lượt sử dụng.");
+                        }
+                    }
 
                     // Nếu đủ tồn kho, tiến hành trừ kho
                     $sqlUpdateProduct = "UPDATE products SET stock = GREATEST(0, COALESCE(stock, 0) - ?), sold_count = COALESCE(sold_count, 0) + ? WHERE id = ?";
@@ -128,13 +156,23 @@ class AdminModel {
                     foreach ($items as $item) {
                         $stmtUpdateProduct->execute([$item['quantity'], $item['quantity'], $item['product_id']]);
                     }
+                    // [MỚI] Sử dụng lại voucher
+                    if (!empty($voucherId)) {
+                        $this->db->prepare("UPDATE vouchers SET used_count = used_count + 1 WHERE id = ?")->execute([$voucherId]);
+                    }
                 }
             }
 
-            // 4. Cập nhật trạng thái đơn hàng
-            $sql = "UPDATE orders SET status = ? WHERE id = ?"; // Đã bỏ cột 'updated_at'
+            // 4. Cập nhật trạng thái và số lần giao
+            $newAttempts = $currentAttempts;
+            // Nếu admin khôi phục đơn hàng bị từ chối, tăng số lần thử giao
+            if ($currentStatus === 'refused' && $status === 'pending') {
+                $newAttempts = $currentAttempts + 1;
+            }
+
+            $sql = "UPDATE orders SET status = ?, delivery_attempts = ? WHERE id = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([$status, $orderId]);
+            $stmt->execute([$status, $newAttempts, $orderId]);
 
             $this->db->commit();
             return $stmt->rowCount() > 0;
@@ -190,37 +228,16 @@ class AdminModel {
         return $stmt->execute([$isLocked, $userId]);
     }
 
-    // [MỚI] Lấy tổng chi tiêu của một người dùng
-    public function getUserTotalSpent(int $userId): float {
-        $sql = "SELECT COALESCE(SUM(total_price), 0) as total_spent 
-                FROM orders 
-                WHERE user_id = ? AND status = 'delivered'";
-        try {
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([$userId]);
-            return (float)$stmt->fetchColumn();
-        } catch (Exception $e) {
-            return 0.0;
-        }
-    }
-
     // ==========================================
     // 7. QUẢN LÝ SẢN PHẨM (CRUD)
     // ==========================================
 
-    public function getAllProductsForAdmin(string $filter = 'newest'): array {
-        $orderBy = "p.created_at DESC"; // Mặc định
-        if ($filter === 'bestseller') {
-            $orderBy = "p.sold_count DESC, p.created_at DESC";
-        } elseif ($filter === 'worstseller') {
-            $orderBy = "p.sold_count ASC, p.created_at DESC";
-        }
-
+    public function getAllProductsForAdmin(): array {
         $sql = "SELECT p.*, c.name as category_name, b.name as brand_name
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id
                 LEFT JOIN brands b ON p.brand_id = b.id
-                ORDER BY {$orderBy}";
+                ORDER BY p.created_at DESC";
         try {
             return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -364,96 +381,6 @@ class AdminModel {
     
     return $success;
     }
-
-    public function deleteMultipleProducts(array $ids): int {
-        if (empty($ids)) {
-            return 0;
-        }
-
-        // Tạo chuỗi placeholders cho câu lệnh IN, ví dụ: ?,?,?
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
-
-        // 1. KIỂM TRA RÀNG BUỘC: Xem các sản phẩm có nằm trong đơn hàng nào không
-        $checkSql = "SELECT DISTINCT p.name, oi.order_id 
-                     FROM order_items oi
-                     JOIN products p ON oi.product_id = p.id
-                     WHERE oi.product_id IN ({$placeholders})";
-        $checkStmt = $this->db->prepare($checkSql);
-        $checkStmt->execute($ids);
-        $relatedOrders = $checkStmt->fetchAll(PDO::FETCH_ASSOC);
-
-        if (!empty($relatedOrders)) {
-            $errorMsg = "Không thể xóa! Một số sản phẩm đang có trong đơn hàng: ";
-            $productErrors = [];
-            foreach($relatedOrders as $item) {
-                $productErrors[] = htmlspecialchars($item['name']) . " (đơn hàng #" . $item['order_id'] . ")";
-            }
-            throw new Exception($errorMsg . implode(', ', array_unique($productErrors)));
-        }
-
-        // 2. LẤY THÔNG TIN ẢNH: Để chuẩn bị cho việc xóa file vật lý
-        $sqlGetImages = "SELECT image FROM products WHERE id IN ({$placeholders}) AND image IS NOT NULL AND image != ''";
-        $stmtGetImages = $this->db->prepare($sqlGetImages);
-        $stmtGetImages->execute($ids);
-        $imagesToDelete = $stmtGetImages->fetchAll(PDO::FETCH_COLUMN);
-
-        // 3. THỰC HIỆN XÓA: Xóa sản phẩm khỏi database
-        $sql = "DELETE FROM products WHERE id IN ({$placeholders})";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($ids);
-        $deletedRowCount = $stmt->rowCount();
-
-        // 4. XÓA FILE ẢNH VẬT LÝ: Nếu xóa database thành công
-        if ($deletedRowCount > 0 && !empty($imagesToDelete)) {
-            foreach ($imagesToDelete as $image) {
-                $imagePath = ROOT_PATH . '/assets/img/' . $image;
-                if (file_exists($imagePath)) {
-                    @unlink($imagePath);
-                }
-            }
-        }
-        
-        return $deletedRowCount;
-    }
-
-    public function applyDiscountToMultipleProducts(array $ids, float $percentage): int {
-        if (empty($ids) || $percentage <= 0 || $percentage > 100) {
-            return 0;
-        }
-
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
-
-        // SQL sẽ tính toán sale_price mới dựa trên giá gốc.
-        // Làm tròn kết quả đến hàng nghìn gần nhất để có giá đẹp hơn.
-        // Đồng thời đảm bảo giá sale không lớn hơn giá gốc (phòng trường hợp làm tròn lên).
-        $sql = "UPDATE products 
-                SET sale_price = LEAST(price, ROUND((price * (100 - ?)/100) / 1000) * 1000)
-                WHERE id IN ({$placeholders}) AND price > 0";
-
-        $params = array_merge([$percentage], $ids);
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        
-        return $stmt->rowCount();
-    }
-
-    public function removeDiscountFromMultipleProducts(array $ids): int {
-        if (empty($ids)) {
-            return 0;
-        }
-
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
-
-        // Đặt sale_price về NULL để xóa giảm giá
-        $sql = "UPDATE products SET sale_price = NULL WHERE id IN ({$placeholders})";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($ids);
-        
-        return $stmt->rowCount();
-    }
-
 
     // ==========================================
     // 8. QUẢN LÝ ĐÁNH GIÁ

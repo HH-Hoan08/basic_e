@@ -194,8 +194,13 @@ foreach ($variants as $v) {
                         <ul class="list-inline">
                             <li class="list-inline-item"><h6>Tình trạng:</h6></li>
                             <li class="list-inline-item">
-                                <?php if ($product->inStock()): ?>
-                                    <span class="badge bg-success">Còn <?= $product->getStock() ?> sản phẩm</span>
+                                <?php 
+                                    $stock = $product->getStock();
+                                    if ($stock > 10): 
+                                ?>
+                                    <span class="badge bg-success">Còn hàng</span>
+                                <?php elseif ($stock > 0): ?>
+                                    <span class="badge bg-warning text-dark">Chỉ còn <?= $stock ?> sản phẩm</span>
                                 <?php else: ?>
                                     <span class="badge bg-danger">Hết hàng</span>
                                 <?php endif; ?>
@@ -207,7 +212,7 @@ foreach ($variants as $v) {
                             <input type="hidden" name="product_id"    value="<?= $product->getId() ?>">
                             <input type="hidden" name="product_size"  id="product-size"     value="">
                             <input type="hidden" name="product_color" id="product-color"    value="">
-                            <input type="hidden" name="product_qty"   id="product-quanity"  value="1">
+                            <input type="hidden" name="product_qty"   id="product_qty"      value="1">
 
                             <div class="row">
                                 <!-- Kích cỡ -->
@@ -241,19 +246,20 @@ foreach ($variants as $v) {
                                     <ul class="list-inline pb-3">
                                         <li class="list-inline-item text-right">
                                             Số lượng
-                                            <input type="hidden" name="product-quanity"
-                                                   id="product-quanity" value="1">
                                         </li>
                                         <li class="list-inline-item">
                                             <span class="btn btn-success" id="btn-minus">-</span>
                                         </li>
                                         <li class="list-inline-item">
-                                            <span class="badge bg-secondary" id="var-value">1</span>
+                                            <span class="badge bg-secondary px-3" id="var-value" style="font-size: 1rem;">1</span>
                                         </li>
                                         <li class="list-inline-item">
                                             <span class="btn btn-success" id="btn-plus">+</span>
                                         </li>
                                     </ul>
+                                    <small id="qty-alert" class="text-danger d-none" style="display: block; margin-top: -1rem; margin-bottom: 1rem;">
+                                        Đã đạt số lượng tối đa trong kho.
+                                    </small>
                                 </div>
                             </div>
 
@@ -634,23 +640,54 @@ function selectColor(el, color) {
 }
 
 // Tăng / giảm số lượng
-let qty      = 1;
-const maxQty = <?= (int)$product->getStock() ?>;
-
-document.getElementById('btn-plus').addEventListener('click', function () {
-    if (qty < maxQty) {
-        qty++;
-        document.getElementById('var-value').textContent      = qty;
-        document.getElementById('product-quanity').value      = qty;
+document.addEventListener('DOMContentLoaded', function() {
+    const qtyInput = document.getElementById('product_qty');
+    const qtyDisplay = document.getElementById('var-value');
+    const btnPlus = document.getElementById('btn-plus');
+    const btnMinus = document.getElementById('btn-minus');
+    const qtyAlert = document.getElementById('qty-alert');
+    const maxQty = <?= (int)$product->getStock() ?>;
+    
+    let max = maxQty;
+    
+    function updateQtyControls() {
+        let currentQty = parseInt(qtyInput.value);
+    
+        btnMinus.classList.toggle('disabled', currentQty <= 1);
+        btnPlus.classList.toggle('disabled', currentQty >= maxQty);
+        if (qtyAlert) {
+            qtyAlert.classList.toggle('d-none', currentQty < maxQty);
+        }
     }
-});
 
-document.getElementById('btn-minus').addEventListener('click', function () {
-    if (qty > 1) {
-        qty--;
-        document.getElementById('var-value').textContent      = qty;
-        document.getElementById('product-quanity').value      = qty;
-    }
+    btnPlus.addEventListener('click', function () {
+        // Dừng ngay nếu nút đã bị vô hiệu hóa (chống click nhanh)
+        let qty = parseInt(qtyInput.value);
+        // Kiểm tra lại giá trị một lần nữa để đảm bảo an toàn
+        if (qty < maxQty) {
+            qty++;
+            qtyInput.value = qty;
+            qtyDisplay.textContent = qty;
+        }
+        // Luôn gọi updateQtyControls để cập nhật trạng thái nút và cảnh báo
+        updateQtyControls();
+    });
+
+    btnMinus.addEventListener('click', function () {
+        if (this.classList.contains('disabled')) {
+            return;
+        }
+        let qty = parseInt(qtyInput.value);
+        if (qty > 1) {
+            qty--;
+            qtyInput.value = qty;
+            qtyDisplay.textContent = qty;
+            updateQtyControls();
+        }
+    });
+
+    // Kiểm tra trạng thái ban đầu khi tải trang
+    updateQtyControls();
 });
 </script>
 

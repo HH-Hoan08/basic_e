@@ -234,14 +234,20 @@ if (!$isLoggedIn) {
                                                         'confirmed' => 'Đã xác nhận',
                                                         'shipping' => 'Đang giao',
                                                         'delivered' => 'Thành công',
-                                                        'cancelled' => 'Đã hủy'
+                                                        'return_request' => 'Yêu cầu hoàn trả',
+                                                        'returned' => 'Đã hoàn trả',
+                                                        'cancelled' => 'Đã hủy',
+                                                        'refused' => 'Giao hàng thất bại'
                                                     ];
                                                     $statusBadges = [
                                                         'pending' => 'bg-warning text-dark',
                                                         'confirmed' => 'bg-info text-dark',
                                                         'shipping' => 'bg-primary',
                                                         'delivered' => 'bg-success',
-                                                        'cancelled' => 'bg-danger'
+                                                        'return_request' => 'bg-info text-dark',
+                                                        'returned' => 'bg-dark',
+                                                        'cancelled' => 'bg-secondary',
+                                                        'refused' => 'bg-danger'
                                                     ];
                                                     $currentStatus = $order['status'] ?? 'pending';
                                                 ?>
@@ -250,11 +256,28 @@ if (!$isLoggedIn) {
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="index.php?page=profile&action=view_order&order_id=<?= $order['id'] ?>" class="btn btn-sm btn-outline-success"><i class="fa fa-eye"></i> Xem chi tiết</a>
+                                                <a href="index.php?page=profile&action=view_order&order_id=<?= $order['id'] ?>" class="btn btn-sm btn-outline-success mb-1"><i class="fa fa-eye"></i> Xem</a>
+                                                
+                                                <!-- Nút Hủy đơn hàng (chỉ hiện khi đang chờ xác nhận) -->
                                                 <?php if ($currentStatus === 'pending'): ?>
                                                     <form action="index.php?page=profile&action=cancel_order" method="POST" class="d-inline-block m-0 p-0" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?');">
                                                         <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger">Hủy đơn</button>
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger mb-1">Hủy đơn</button>
+                                                    </form>
+                                                <?php endif; ?>
+
+                                                <!-- Nút Hoàn trả hàng (chỉ hiện khi đã giao thành công) -->
+                                                <?php if ($currentStatus === 'delivered'): ?>
+                                                    <button type="button" class="btn btn-sm btn-warning mb-1 text-dark" data-bs-toggle="modal" data-bs-target="#returnOrderModal" data-order-id="<?= $order['id'] ?>">
+                                                        <i class="fa fa-undo"></i> Hoàn trả
+                                                    </button>
+                                                <?php endif; ?>
+
+                                                <!-- Nút Yêu cầu giao lại (chỉ hiện khi bị từ chối lần 1) -->
+                                                <?php if ($currentStatus === 'refused' && ($order['delivery_attempts'] ?? 1) < 2): ?>
+                                                    <form action="<?= BASE_URL ?>index.php?page=profile&action=request_redelivery" method="POST" class="d-inline" onsubmit="return confirm('Bạn muốn yêu cầu giao lại đơn hàng này?');">
+                                                        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                        <button type="submit" class="btn btn-sm btn-info mb-1 text-dark">Yêu cầu giao lại</button>
                                                     </form>
                                                 <?php endif; ?>
                                             </td>
@@ -265,8 +288,34 @@ if (!$isLoggedIn) {
                             </div>
                         <?php endif; ?>
                     </div>
-                                </div>
+                </div>
             </div>
+
+            <!-- Modal Hoàn trả hàng -->
+            <div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form action="<?= BASE_URL ?>index.php?page=profile&action=request_return" method="POST">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="returnOrderModalLabel">Yêu cầu Hoàn trả Đơn hàng</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="order_id" id="modal_order_id">
+                                <div class="mb-3">
+                                    <label for="return_reason" class="form-label">Vui lòng cho chúng tôi biết lý do bạn muốn hoàn trả đơn hàng này: <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="return_reason" name="return_reason" rows="4" required placeholder="Ví dụ: Sản phẩm sai kích cỡ, sản phẩm bị lỗi..."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB 3: ĐÁNH GIÁ CỦA TÔI -->
             <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
                 <h5 class="mb-4">Đánh giá của tôi</h5>
@@ -553,4 +602,15 @@ if (!$isLoggedIn) {
             }
         }
     });
+
+    // Script cho Modal Hoàn trả hàng
+    var returnModal = document.getElementById('returnOrderModal');
+    if (returnModal) {
+        returnModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var orderId = button.getAttribute('data-order-id');
+            var modalOrderIdInput = returnModal.querySelector('#modal_order_id');
+            modalOrderIdInput.value = orderId;
+        });
+    }
 </script>

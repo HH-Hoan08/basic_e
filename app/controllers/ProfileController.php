@@ -106,41 +106,74 @@ class ProfileController extends Controller {
             exit();
         }
 
+        // [MỚI] Xử lý khách hàng bấm "Đã nhận được hàng"
+        if (isset($_GET['action']) && $_GET['action'] === 'receive_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $orderId = (int)($_POST['order_id'] ?? 0);
+            $orderModel = $this->model('OrderModel');
+            
+            try {
+                if ($orderModel->markAsReceived($orderId, $userInfo['id'])) {
+                    $_SESSION['profile_success'] = "Cảm ơn bạn đã xác nhận nhận hàng! Đơn hàng #{$orderId} đã được giao thành công.";
+                } else {
+                    $_SESSION['profile_error'] = "Không thể xác nhận đơn hàng #{$orderId}.";
+                }
+            } catch (Exception $e) {
+                $_SESSION['profile_error'] = "Lỗi: " . $e->getMessage();
+            }
+
+            header("Location: " . BASE_URL . "index.php?page=profile#orders");
+            exit();
+        }
+
+        // [MỚI] Xử lý khách hàng yêu cầu hoàn trả hàng
+        if (isset($_GET['action']) && $_GET['action'] === 'request_return' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $orderId = (int)($_POST['order_id'] ?? 0);
+            $reason = trim($_POST['return_reason'] ?? '');
+            $orderModel = $this->model('OrderModel');
+
+            if (empty($reason)) {
+                $_SESSION['profile_error'] = "Vui lòng nhập lý do hoàn trả.";
+            } else {
+                try {
+                    if ($orderModel->requestReturn($orderId, $userInfo['id'], $reason)) {
+                        $_SESSION['profile_success'] = "Đã gửi yêu cầu hoàn trả cho đơn hàng #{$orderId}. Admin sẽ sớm xem xét yêu cầu của bạn.";
+                    } else {
+                        $_SESSION['profile_error'] = "Không thể gửi yêu cầu cho đơn hàng #{$orderId}.";
+                    }
+                } catch (Exception $e) {
+                    $_SESSION['profile_error'] = "Lỗi: " . $e->getMessage();
+                }
+            }
+
+            header("Location: " . BASE_URL . "index.php?page=profile#orders");
+            exit();
+        }
+
+        // [MỚI] Xử lý khách hàng bấm "Yêu cầu giao lại"
+        if (isset($_GET['action']) && $_GET['action'] === 'request_redelivery' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $orderId = (int)($_POST['order_id'] ?? 0);
+            $orderModel = $this->model('OrderModel');
+
+            try {
+                if ($orderModel->requestRedelivery($orderId, $userInfo['id'])) {
+                    $_SESSION['profile_success'] = "Đã gửi yêu cầu giao lại cho đơn hàng #{$orderId}. Vui lòng chờ Admin xác nhận và giao lại.";
+                } else {
+                    $_SESSION['profile_error'] = "Không thể xử lý yêu cầu cho đơn hàng #{$orderId}.";
+                }
+            } catch (Exception $e) {
+                $_SESSION['profile_error'] = "Lỗi: " . $e->getMessage();
+            }
+
+            header("Location: " . BASE_URL . "index.php?page=profile#orders");
+            exit();
+        }
+
         // lấy email admin gửi cho user
         $emailModel = $this->model('AdminModel');
         $userEmails = [];
-        $userTier = 'member'; // Khởi tạo giá trị mặc định
-
-        // [MỚI] Khai báo các biến cho thông tin lên hạng
-        $totalSpent = 0;
-        $nextTierName = null;
-        $amountNeeded = 0;
-        $progressPercent = 0;
-
         if ($userInfo) {
-            $userTier = $userModel->getUserTier($userInfo['id']);
-            $userEmails = $emailModel->getEmailsForUser($userInfo['username'], $userTier);
-
-            // [MỚI] Tính toán thông tin để lên hạng
-            $totalSpent = $emailModel->getUserTotalSpent($userInfo['id']); // Dùng model đã có
-            
-            $tierThresholds = [
-                'member' => ['next' => 'Bạc', 'goal' => 5000000],
-                'silver' => ['next' => 'Vàng', 'goal' => 20000000],
-                'gold'   => ['next' => 'Kim cương', 'goal' => 50000000],
-                'diamond' => ['next' => null, 'goal' => 0]
-            ];
-
-            $currentTierLower = strtolower($userTier);
-            $tierInfo = $tierThresholds[$currentTierLower] ?? $tierThresholds['member'];
-
-            if ($tierInfo['next']) {
-                $nextTierName = $tierInfo['next'];
-                $amountNeeded = max(0, $tierInfo['goal'] - $totalSpent);
-                $progressPercent = $tierInfo['goal'] > 0 ? min(100, ($totalSpent / $tierInfo['goal']) * 100) : 100;
-            } else { // Đã là hạng cao nhất
-                $progressPercent = 100;
-            }
+            $tier = $userModel->getUserTier($userInfo['id']);
+            $userEmails = $emailModel->getEmailsForUser($userInfo['username'], $tier);
         }
 
         // Lấy đánh giá của user
@@ -159,11 +192,6 @@ class ProfileController extends Controller {
             'userOrders' => $orders,
             'userEmails' => $userEmails,
             'userReviews' => $userReviews,
-            'userTier' => $userTier, // Truyền hạng thành viên sang view
-            'totalSpent' => $totalSpent,
-            'nextTierName' => $nextTierName,
-            'amountNeeded' => $amountNeeded,
-            'progressPercent' => $progressPercent,
         ]);
     }
 
