@@ -12,8 +12,8 @@
 <div class="mb-3">
     <strong>Lọc theo:</strong>
     <a href="<?= BASE_URL ?>index.php?page=admin&action=products&filter=newest" class="btn btn-sm <?= ($current_filter ?? 'newest') === 'newest' ? 'btn-primary' : 'btn-outline-primary' ?>">Mới nhất</a>
-    <a href="<?= BASE_URL ?>index.php?page=admin&action=products&filter=bestseller" class="btn btn-sm <?= ($current_filter ?? '') === 'bestseller' ? 'btn-primary' : 'btn-outline-primary' ?>">Bán chạy</a>
-    <a href="<?= BASE_URL ?>index.php?page=admin&action=products&filter=worstseller" class="btn btn-sm <?= ($current_filter ?? '') === 'worstseller' ? 'btn-primary' : 'btn-outline-primary' ?>">Bán ế</a>
+    <a href="<?= BASE_URL ?>index.php?page=admin&action=products&filter=bestsellers" class="btn btn-sm <?= ($current_filter ?? '') === 'bestsellers' ? 'btn-primary' : 'btn-outline-primary' ?>">Bán chạy nhất</a>
+    <a href="<?= BASE_URL ?>index.php?page=admin&action=products&filter=worstseller" class="btn btn-sm <?= ($current_filter ?? '') === 'worstseller' ? 'btn-primary' : 'btn-outline-primary' ?>">Bán ế nhất</a>
 </div>
 
 <form action="<?= BASE_URL ?>index.php?page=admin&action=bulk_action_products" method="POST" id="bulk-action-form">

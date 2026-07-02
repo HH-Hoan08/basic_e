@@ -232,12 +232,27 @@ class AdminModel {
     // 7. QUẢN LÝ SẢN PHẨM (CRUD)
     // ==========================================
 
-    public function getAllProductsForAdmin(): array {
+    public function getAllProductsForAdmin(string $filter = 'newest'): array {
+        // [SỬA] Thêm một map để ánh xạ giá trị filter từ URL sang mệnh đề ORDER BY an toàn
+        $orderMap = [
+            'newest' => 'p.created_at DESC',
+            'oldest' => 'p.created_at ASC',
+            'stock_asc' => 'p.stock ASC, p.name ASC',
+            'stock_desc' => 'p.stock DESC, p.name ASC',
+            'name_asc' => 'p.name ASC',
+            'name_desc' => 'p.name DESC',
+            'bestsellers' => 'p.sold_count DESC',
+            'worstseller' => 'p.sold_count ASC',
+        ];
+
+        // Lấy mệnh đề ORDER BY từ map, nếu không tồn tại thì dùng giá trị mặc định
+        $orderBy = $orderMap[$filter] ?? $orderMap['newest'];
+
         $sql = "SELECT p.*, c.name as category_name, b.name as brand_name
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id
                 LEFT JOIN brands b ON p.brand_id = b.id
-                ORDER BY p.created_at DESC";
+                ORDER BY {$orderBy}";
         try {
             return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -380,6 +395,84 @@ class AdminModel {
     }
     
     return $success;
+    }
+
+    public function deleteMultipleProducts(array $productIds): int {
+        if (empty($productIds)) {
+            return 0;
+        }
+
+        // Tạo placeholders cho mệnh đề IN
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+
+        // 1. Kiểm tra ràng buộc
+        $checkSql = "SELECT p.name, GROUP_CONCAT(DISTINCT oi.order_id) as order_ids
+                     FROM products p
+                     JOIN order_items oi ON p.id = oi.product_id
+                     WHERE p.id IN ({$placeholders})
+                     GROUP BY p.id";
+        $checkStmt = $this->db->prepare($checkSql);
+        $checkStmt->execute($productIds);
+        $conflicts = $checkStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!empty($conflicts)) {
+            $errorMessages = [];
+            foreach ($conflicts as $conflict) {
+                $errorMessages[] = "Sản phẩm '{$conflict['name']}' đang có trong đơn hàng mã: {$conflict['order_ids']}";
+            }
+            throw new Exception("Không thể xóa. Có sản phẩm đang nằm trong đơn hàng: <br>" . implode("<br>", $errorMessages));
+        }
+
+        // 2. Lấy đường dẫn ảnh trước khi xóa
+        $sqlGetImages = "SELECT image FROM products WHERE id IN ({$placeholders})";
+        $stmtGetImages = $this->db->prepare($sqlGetImages);
+        $stmtGetImages->execute($productIds);
+        $images = $stmtGetImages->fetchAll(PDO::FETCH_COLUMN);
+
+        // 3. Xóa sản phẩm khỏi database
+        $sql = "DELETE FROM products WHERE id IN ({$placeholders})";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($productIds);
+        $deletedCount = $stmt->rowCount();
+
+        // 4. Xóa file ảnh vật lý
+        if ($deletedCount > 0) {
+            foreach ($images as $image) {
+                if (!empty($image)) {
+                    $imagePath = ROOT_PATH . '/assets/img/' . $image;
+                    if (file_exists($imagePath)) {
+                        @unlink($imagePath);
+                    }
+                }
+            }
+        }
+
+        return $deletedCount;
+    }
+
+    public function applyDiscountToMultipleProducts(array $productIds, float $percentage): int {
+        if (empty($productIds) || $percentage <= 0 || $percentage > 100) {
+            return 0;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+        $discountMultiplier = 1 - ($percentage / 100);
+
+        $sql = "UPDATE products SET sale_price = ROUND(price * ?) WHERE id IN ({$placeholders})";
+        $stmt = $this->db->prepare($sql);
+        $params = array_merge([$discountMultiplier], $productIds);
+        $stmt->execute($params);
+        return $stmt->rowCount();
+    }
+
+    public function removeDiscountFromMultipleProducts(array $productIds): int {
+        if (empty($productIds)) return 0;
+        
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+        $sql = "UPDATE products SET sale_price = NULL WHERE id IN ({$placeholders})";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($productIds);
+        return $stmt->rowCount();
     }
 
     // ==========================================
