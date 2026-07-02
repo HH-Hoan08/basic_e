@@ -183,7 +183,13 @@ class ProfileController extends Controller {
             $userReviews = $productModel->getReviewsByUser($userInfo['id']);
         }
 
-        $this->view('profile', [
+        // [MỚI] Lấy thông tin hạng và tiến trình thăng hạng
+        $tierProgressData = [];
+        if ($userInfo && isset($userInfo['id'])) {
+            $tierProgressData = $userModel->getUserTierProgress($userInfo['id']);
+        }
+
+        $viewData = array_merge([
             'pageTitle' => 'Basic Shop - Tài khoản của tôi',
             'page' => 'profile',
             'error' => $error,
@@ -192,7 +198,9 @@ class ProfileController extends Controller {
             'userOrders' => $orders,
             'userEmails' => $userEmails,
             'userReviews' => $userReviews,
-        ]);
+        ], $tierProgressData); // Gộp dữ liệu thăng hạng vào mảng data cho view
+
+        $this->view('profile', $viewData);
     }
 
     // Phương thức để xem chi tiết một đơn hàng cụ thể

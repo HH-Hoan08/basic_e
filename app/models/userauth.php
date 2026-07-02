@@ -104,4 +104,59 @@
             $result = $this->read_item($sql, [$userId]);
             return $result[0]['tier'] ?? 'member';
         }
+
+        /**
+         * Lấy thông tin hạng và tiến trình thăng hạng của người dùng.
+         * @param int $userId
+         * @return array Mảng chứa 'userTier', 'totalSpent', 'nextTierName', 'amountNeeded', 'progressPercent'
+         */
+        public function getUserTierProgress(int $userId): array {
+            // 1. Lấy tổng chi tiêu từ các đơn hàng đã giao thành công
+            $sql = "SELECT COALESCE(SUM(total_price), 0) as total_spent
+                    FROM orders
+                    WHERE user_id = ? AND status = 'delivered'";
+            $result = $this->read_item($sql, [$userId]);
+            $totalSpent = (float)($result[0]['total_spent'] ?? 0);
+
+            // 2. Định nghĩa các mốc thăng hạng
+            $tiers = [
+                'Member'  => 0,
+                'Silver'  => 5000000,
+                'Gold'    => 20000000,
+                'Diamond' => 50000000,
+            ];
+
+            // 3. Xác định hạng hiện tại và hạng tiếp theo
+            $currentTier = 'Member';
+            $nextTierName = null;
+            $nextTierAmount = 0;
+
+            foreach ($tiers as $name => $amount) {
+                if ($totalSpent >= $amount) {
+                    $currentTier = $name;
+                } else {
+                    $nextTierName = $name;
+                    $nextTierAmount = $amount;
+                    break; // Dừng lại ở hạng tiếp theo đầu tiên
+                }
+            }
+
+            // 4. Tính toán tiến trình
+            $amountNeeded = 0;
+            $progressPercent = 100;
+            if ($nextTierName) {
+                $amountNeeded = $nextTierAmount - $totalSpent;
+                $previousTierAmount = $tiers[$currentTier];
+                $tierRange = $nextTierAmount - $previousTierAmount;
+                $progressPercent = ($tierRange > 0) ? (($totalSpent - $previousTierAmount) / $tierRange) * 100 : 100;
+            }
+
+            return [
+                'userTier'        => $currentTier,
+                'totalSpent'      => $totalSpent,
+                'nextTierName'    => $nextTierName,
+                'amountNeeded'    => $amountNeeded,
+                'progressPercent' => $progressPercent,
+            ];
+        }
 }
