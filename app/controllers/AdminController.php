@@ -646,6 +646,13 @@ class AdminController extends Controller {
         // Tạo nội dung HTML cho hóa đơn
         $subject = "Xác nhận đơn hàng #" . $order['id'] . " - Basic Shop";
         
+        // [SỬA] Tạo URL gốc tuyệt đối một cách động để ảnh hoạt động trên cả localhost và host thật.
+        // Điều này rất quan trọng để các client email có thể hiển thị hình ảnh.
+        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http");
+        $host = $_SERVER['HTTP_HOST'];
+        $appPath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\'); // Lấy đường dẫn thư mục gốc của ứng dụng, vd: /basic_e
+        $absoluteAppUrl = $protocol . '://' . $host . $appPath;
+
         $body = "<div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>";
         $body .= "<h2 style='color: #28a745;'>Cảm ơn bạn đã đặt hàng tại Basic Shop!</h2>";
         $body .= "<p>Xin chào <strong>" . htmlspecialchars($order['fullname']) . "</strong>,</p>";
@@ -657,12 +664,11 @@ class AdminController extends Controller {
         
         foreach ($order['items'] as $item) {
             $itemTotal = $item['quantity'] * $item['unit_price'];
-            // [SỬA] Thêm ảnh mặc định nếu không có và đảm bảo URL là đường dẫn tuyệt đối để hiển thị trong email
-            $imageName = !empty($item['product_image']) ? $item['product_image'] : 'no-image.jpg';
-            $imageUrl = BASE_URL . 'assets/img/' . $imageName;
+            $imageName = !empty($item['product_image']) ? $item['product_image'] : 'no-image.jpg'; // Sử dụng ảnh mặc định nếu cần
+            $imageUrl = $absoluteAppUrl . '/assets/img/' . $imageName; // Tạo URL tuyệt đối cho ảnh
 
             $body .= "<tr>";
-            $body .= "<td align='center'><img src='" . htmlspecialchars($imageUrl) . "' alt='" . htmlspecialchars($item['product_name']) . "' width='60' style='max-width: 60px; border: 1px solid #ddd; padding: 2px;'></td>";
+            $body .= "<td align='center'><img src='" . $imageUrl . "' alt='" . htmlspecialchars($item['product_name']) . "' width='60' style='max-width: 60px; border: 1px solid #ddd; padding: 2px;'></td>";
             $body .= "<td>" . htmlspecialchars($item['product_name']) . "</td>";
             $body .= "<td align='center'>" . $item['quantity'] . "</td>";
             $body .= "<td align='right'>" . number_format($item['unit_price'], 0, ',', '.') . " đ</td>";
